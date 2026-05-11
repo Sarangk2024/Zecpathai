@@ -1,0 +1,48 @@
+{
+  "categories": {
+    "introduction": {
+      "fresher": [
+        "Can you introduce yourself?",
+        "Tell me about your academic background."
+      ],
+      "experienced": [
+        "Walk me through your career journey.",
+        "Tell me about your professional background."
+      ]
+    },
+    "strengths_weaknesses": {
+      "common": [
+        "What are your strengths?",
+        "What is your biggest weakness?"
+      ]
+    },
+    "teamwork": {
+      "common": [
+        "Tell me about a time you worked in a team.",
+        "How do you handle conflicts in a team?"
+      ]
+    },
+    "career_goals": {
+      "common": [
+        "Where do you see yourself in 5 years?",
+        "What are your career goals?"
+      ]
+    },
+    "availability": {
+      "common": [
+        "What is your notice period?",
+        "When can you join?"
+      ]
+    }
+  },
+  "role_based": {
+    "technical": [
+      "Explain a challenging technical problem you solved.",
+      "How do you keep your technical skills updated?"
+    ],
+    "non_technical": [
+      "How do you handle client communication?",
+      "Describe a situation where you solved a business problem."
+    ]
+  }
+}
