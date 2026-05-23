@@ -1,0 +1,36 @@
+[
+  {
+    "candidate_id": "C1001",
+    "role": "Backend Developer",
+    "experience": "2 years",
+    "answers": [
+      {
+        "question": "Tell me about yourself",
+        "answer": "I am a backend developer with experience in Python and APIs."
+      },
+      {
+        "question": "Describe teamwork experience",
+        "answer": "I worked with a team to deliver projects on time."
+      },
+      {
+        "question": "What are your strengths?",
+        "answer": "Problem solving and learning quickly."
+      }
+    ]
+  },
+  {
+    "candidate_id": "C1002",
+    "role": "Frontend Developer",
+    "experience": "Fresher",
+    "answers": [
+      {
+        "question": "Tell me about yourself",
+        "answer": "I recently graduated and learned React."
+      },
+      {
+        "question": "Teamwork?",
+        "answer": "I did projects in college teams."
+      }
+    ]
+  }
+]
