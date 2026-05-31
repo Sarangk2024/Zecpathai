@@ -1,0 +1,21 @@
+{
+  "candidate_id": "sample_resume",
+  "filename": "sample_resume_cleaned.txt",
+  "job_title_applied": "cnc machinist",
+  "is_tech_mismatch": false,
+  "skill_score": 33.33,
+  "experience_score": 67.5,
+  "education_score": 100.0,
+  "semantic_score": 27.12,
+  "final_score": 49.32,
+  "fair_score": 29.6,
+  "masked_profile": {
+    "name": "MASKED",
+    "gender": "MASKED",
+    "location": "MASKED",
+    "email": "MASKED"
+  },
+  "normalized_score": 49.17,
+  "rank": 12,
+  "status": "Rejected"
+}

@@ -1,0 +1,13 @@
+{
+  "candidate_id": "resume_mold_shop_helper",
+  "academic_profile": {
+    "education": [],
+    "certifications": [
+      {
+        "name": "Cnc",
+        "category": "Machining",
+        "relevance_score": 0.5
+      }
+    ]
+  }
+}

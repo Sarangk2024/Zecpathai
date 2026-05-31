@@ -1,0 +1,21 @@
+{
+  "candidate_id": "Developer_Sarang_K_ATS_new_wipro",
+  "filename": "Developer_Sarang_K_ATS_new_wipro_cleaned.txt",
+  "job_title_applied": "tool die maker",
+  "is_tech_mismatch": true,
+  "skill_score": 0.0,
+  "experience_score": 10.0,
+  "education_score": 90.0,
+  "semantic_score": 14.95,
+  "final_score": 19.74,
+  "fair_score": 8.97,
+  "masked_profile": {
+    "name": "MASKED",
+    "gender": "MASKED",
+    "location": "MASKED",
+    "email": "MASKED"
+  },
+  "normalized_score": 1.12,
+  "rank": 14,
+  "status": "Rejected"
+}

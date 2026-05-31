@@ -1,0 +1,39 @@
+{
+  "candidate_file": "resume_2page_multi_col_cleaned.txt",
+  "extracted_experiences": [
+    {
+      "company": "Lead Designer - MoldTech Solutions",
+      "start_year": 2022,
+      "start_month": 1,
+      "start_month_idx": 24265,
+      "end_year": 2026,
+      "end_month": 7,
+      "end_month_idx": 24319,
+      "duration_months": 54,
+      "duration_years": 4
+    },
+    {
+      "company": "Senior Design Engineer - Precision Moulds India",
+      "start_year": 2018,
+      "start_month": 1,
+      "start_month_idx": 24217,
+      "end_year": 2022,
+      "end_month": 1,
+      "end_month_idx": 24265,
+      "duration_months": 48,
+      "duration_years": 4
+    }
+  ],
+  "extracted_roles": [
+    "mold design engineer",
+    "machinist",
+    "cnc machinist",
+    "engineer"
+  ],
+  "total_experience_years": 8,
+  "total_experience_months": 102,
+  "detected_gaps": [],
+  "detected_overlaps": [],
+  "target_job_role": "mold design engineer",
+  "role_relevance_score": 50.0
+}

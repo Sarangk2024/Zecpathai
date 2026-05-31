@@ -1,0 +1,39 @@
+{
+  "candidate_file": "Developer_Sarang_K_ATS_new_wipro_cleaned.txt",
+  "extracted_experiences": [
+    {
+      "company": "Software Developer Intern Eqsoft Business Solutions Pvt Ltd",
+      "start_year": 2025,
+      "start_month": 6,
+      "start_month_idx": 24306,
+      "end_year": 2025,
+      "end_month": 7,
+      "end_month_idx": 24307,
+      "duration_months": 1,
+      "duration_years": 0
+    },
+    {
+      "company": "AI Intern Infosys Springboard",
+      "start_year": 2025,
+      "start_month": 12,
+      "start_month_idx": 24312,
+      "end_year": 2026,
+      "end_month": 3,
+      "end_month_idx": 24315,
+      "duration_months": 3,
+      "duration_years": 0
+    }
+  ],
+  "extracted_roles": [
+    "software developer",
+    "developer",
+    "intern",
+    "engineer"
+  ],
+  "total_experience_years": 0,
+  "total_experience_months": 4,
+  "detected_gaps": [],
+  "detected_overlaps": [],
+  "target_job_role": "unknown",
+  "role_relevance_score": 10.0
+}

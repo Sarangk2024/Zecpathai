@@ -1,0 +1,43 @@
+[
+  {
+    "question_id": "Q1",
+    "text": {
+      "en": "Can you introduce yourself?",
+      "hi": "क्या आप अपना परिचय दे सकते हैं?",
+      "ml": "നിങ്ങൾ നിങ്ങളെ പരിചയപ്പെടുത്താമോ?"
+    },
+    "category": "introduction",
+    "expected_answer_type": "text",
+    "mandatory": true,
+    "importance": 5,
+    "follow_up": [
+      "Can you highlight your key strengths?",
+      "What motivates you?"
+    ],
+    "evaluation_criteria": [
+      "clarity",
+      "confidence",
+      "communication"
+    ]
+  },
+  {
+    "question_id": "Q3",
+    "text": {
+      "en": "How many years of experience do you have?",
+      "hi": "आपके पास कितने वर्षों का अनुभव है?",
+      "ml": "നിങ്ങൾക്ക് എത്ര വർഷത്തെ പരിചയമുണ്ട്?"
+    },
+    "category": "experience",
+    "expected_answer_type": "number",
+    "mandatory": true,
+    "importance": 5,
+    "follow_up": [
+      "What was your most recent role?",
+      "Can you describe your responsibilities?"
+    ],
+    "evaluation_criteria": [
+      "accuracy",
+      "relevance"
+    ]
+  }
+]

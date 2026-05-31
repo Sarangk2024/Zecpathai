@@ -1,0 +1,36 @@
+{
+  "candidate_id": "resume_2page_multi_col",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "B.Tech",
+        "field": "Mechanical Engineering",
+        "institution": "College of Engineering, Guindy",
+        "year": 2018,
+        "confidence": 0.9
+      }
+    ],
+    "certifications": [
+      {
+        "name": "Solidworks",
+        "category": "CAD_CAM",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "CADCAM: NX CAD, SolidWorks, Catia V5, AutoCAD",
+        "category": "CAD_CAM",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Cnc",
+        "category": "Machining",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Gdt",
+        "category": "Quality",
+        "relevance_score": 0.5
+      }
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+Sarang K
+Kannur, Kerala 91 8078738602 sarangsajeevan629@gmail.com
+linkedin.cominsarangk2003 github.comSarangk2024 Portfolio
+Professional Summary
+Software Developer with hands-on experience designing and deploying RESTful APIs, backend systems, and machine learning
+applications using Python, FastAPI, Node.js, and ASP.NET MVC. Delivered software solutions across internships and multiple projects
+spanning AI, blockchain, and IoT domains. Comfortable working across the software development lifecycle-from requirements and
+database design to development, testing, and deployment. Targeting entry-level Software Developer roles where scalable software
+solutions and engineering best practices create measurable impact.
+Skills
+Languages:Python, JavaScript, Java, C
+Frontend:React, HTML, CSS, JavaScript ES6
+Backend APIs:FastAPI, Node.js, Express.js, ASP.NET MVC, RESTful API Design, JWT Authentication
+Databases:MySQL, PostgreSQL, SQL, Query Optimization
+DevOps Cloud:Docker, Git, GitHub, CICD Pipelines, Render, Vercel
+AI ML:EfficientNet, MobileNetV2, TensorFlow, Image Classification, Model Training Evaluation
+Engineering Practices:AgileScrum, SDLC, OOP, DSA, DBMS, Debugging, Postman, Swagger
+Experience
+AI Intern Infosys Springboard Dec 2025 - Mar 2026
+ - Trained an EfficientNet transfer learning model for plant disease classification across10 crop categories, improving validation
+accuracy from80 to 92through iterative preprocessing, augmentation, and hyperparameter tuning
+ - Designed and deployed the complete ML pipeline - data ingestion, augmentation, model training, and inference - using Tensor-
+Flow and Python validated performance on held-out test sets and documented results for reproducibility
+Software Developer Intern Eqsoft Business Solutions Pvt LtdJun 2025 - Jul 2025
+ - Developed12REST API endpoints using ASP.NET MVC to power client-facing business workflows, backed by a normalized
+MySQL database
+ - Implemented JWT-based authentication and 3-tier Role-Based Access Control RBAC optimized MySQL queries through index
+tuning, reducing average execution time by35
+ - Participated in software development lifecycle activities including development, testing, debugging, and deployment support for
+business applications
+Projects
+AgriDetect AIPython, FastAPI, EfficientNet, DockerLive Demo
+ - Developed a publicly deployed ML web application for crop disease detection across10 categorieswheat, apple, grape, rice,
+pumpkin, and others, achieving92 accuracyusing EfficientNet with transfer learning
+ - Architected8FastAPI endpoints with JWT-secured access and sub-300ms average response time containerized with Docker and
+deployed via automated CICD pipeline to Vercel
+Blockchain Product Verification SystemNode.js, Express.js, MongoDB, ReactLive Demo
+ - Engineered10backend API endpoints for product authentication and blockchain verification using Node.js and Express.js, with full
+Postman-tested documentation
+ - Integrated Web3.js for on-chain transaction calls onEthereum testnet Sepoliaand designed an indexed MongoDB schema to
+prevent duplicate and fraudulent product registration
+Smart Helmet Accident Alert SystemPHP , MySQL, IoT
+ - Engineered a PHP backend to ingest real-time accelerometer and GPS data from helmet-mounted IoT sensors, triggering automated
+emergency contact notifications within500msof collision detection
+ - Designed a normalized MySQL schema across5 tablesto store sensor readings, user profiles, and alert event logs, enforcing
+referential integrity across all foreign key relationships
+Education
+B.Tech in Computer Science and Engineering 2022 - 2026
+College of Engineering Thalassery, KeralaCGPA: 8.88 10
+Certifications
+Infosys AI Virtual Internship Certificate, IBM Full Stack Software Developer Professional Certificate, UPCode AI Bootcamp Certificate

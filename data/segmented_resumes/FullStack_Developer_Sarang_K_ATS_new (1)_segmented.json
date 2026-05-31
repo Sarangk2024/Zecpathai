@@ -1,0 +1,45 @@
+{
+  "other": [
+    "Sarang K",
+    "Kannur, Kerala 91 8078738602 sarangsajeevan629@gmail.com",
+    "linkedin.cominsarangk2003 github.comSarangk2024 Portfolio"
+  ],
+  "summary": [
+    "Full Stack Computer Science engineer with end-to-end development experience across React frontends, Node.js and Python backends, RESTful API design, and cloud deployments. Delivered production-grade applications spanning AI, blockchain, and IoT domains across two internships and three independently scoped projects. Proficient in the complete full stack lifecycle - UI development, API design, database schema, authentication, containerization, and CICD deployment. Targeting entry-level Full Stack Developer roles where ownership of the entire application stack drives meaningful product outcomes."
+  ],
+  "skills": [
+    "Frontend:React,Context API, HTML5, CSS3, JavaScript ES6, Bootstrap, Tailwind CSS, Responsive Design",
+    "Backend APIs:Node.js, Express.js, FastAPI, ASP.NET MVC, RESTful API Design, JWT Authentication, RBAC, Swagger",
+    "Databases:MySQL, PostgreSQL, SQL Query Optimization",
+    "DevOps Cloud:Docker, GitGitHub CICD Pipelines, Vercel, Render",
+    "Languages:JavaScript ES6, Python, Java, C",
+    "AI ML:TensorFlow, EfficientNet, Transfer Learning, Image Classification, Model Deployment"
+  ],
+  "experience": [
+    "AI Developer Intern Zecser May 2026 - Present",
+    "- DevelopingZecPath AI, an AI-powered recruitment and HR automation platform focused on resume parsing, candidate screening, and intelligent skill extraction",
+    "- Built NLP-based pipelines for extracting skills, education, and experience data from resumes using Python and machine learning techniques",
+    "- Worked on synchronous and asynchronous AI workflows for scalable resume processing and automated candidate evaluation",
+    "Software Developer Intern Eqsoft Business Solutions Pvt LtdJun 2025 - Jul 2025",
+    "- Built12RESTful API endpoints using ASP.NET MVC integrated with a normalized MySQL database developed corresponding frontend data flows for client-facing business workflows",
+    "- Implemented JWT-based authentication, 3-tier RBAC, and session management across the full stack reduced MySQL query execution time by35through index tuning and query restructuring"
+  ],
+  "projects": [
+    "AgriDetect AIReact, FastAPI, Python, EfficientNet, Docker, CICDLive Demo",
+    "- Developed a full-stack crop disease detection application: React frontend with responsive image upload UI and FastAPI backend serving a92 accurateEfficientNet model across 10 categories containerized with Docker",
+    "- Architected8 RESTful API endpointswith JWT authentication and sub-300ms average response time deployed via automated CICD pipeline to Vercel",
+    "Blockchain Product Verification SystemReact, Node.js, Express.js, MongoDB, Web3.jsLive Demo",
+    "- Built end-to-end: React frontend for product verification flows and a Node.jsExpress.js backend with10 RESTful API endpoints integrated Web3.js for Ethereum Sepolia testnet on-chain transaction calls",
+    "- Designed an indexed MongoDB schema to prevent fraudulent product registration applied MVC architecture with full Postmandocumented API test coverage",
+    "Smart Helmet Accident Alert SystemJavaScript, PHP , MySQL, IoT, REST API",
+    "- Engineered a full-stack IoT application: real-time dashboard frontend and a PHP backend ingesting accelerometer and GPS sensor data, triggering emergency alerts within500msof collision detection",
+    "- Designed a normalized MySQL schema across5 relational tableswith full referential integrity for sensor logs, user profiles, and alert events"
+  ],
+  "education": [
+    "B.Tech in Computer Science and Engineering",
+    "College of Engineering Thalassery, Kerala"
+  ],
+  "certifications": [
+    "Infosys AI Virtual Internship Certificate, IBM Full Stack Software Developer Professional Certificate, UPCode AI Bootcamp Certificate"
+  ]
+}

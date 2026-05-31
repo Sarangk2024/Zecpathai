@@ -1,0 +1,21 @@
+{
+  "other": [
+    "NEHA KULKARNI",
+    "Mold Design Engineer Bangalore, India 91-9222334455 neha.k@email.com"
+  ],
+  "summary": [
+    "Analytical Mold Design Engineer with 5 years of experience creating core-and-cavity layouts for plastic injection moulds. Skilled in running MoldFlow thermal simulations, designing hot runner systems, and selecting core gating. Strong understanding of draft clearances and material shrinkage coefficients."
+  ],
+  "experience": [
+    "Design Engineer - Tata Autocomp Systems 2021 - Present Created 3D mold CAD models for automotive interior trims using Siemens NX. Designed gate positions, cooling channel paths, and mechanical ejector plate systems. Conducted MoldFlow shrink, warp, and temperature simulations to resolve cosmetic sink marks. Collaborated with CNC tooling machinists to verify CAD model dimensions."
+  ],
+  "education": [
+    "B.Tech in Plastics Technology",
+    "CIPET, Ahmedabad",
+    "Core Skills",
+    "CAD systems: Siemens NX, SolidWorks, AutoCAD.",
+    "Mold Flow Analysis: Fill analysis, pack checks, cooling calculations.",
+    "Tooling concepts: Cavity splits, sliders, angle pin actions, lifter designs.",
+    "Material shrinkages: ABS, Polypropylene, Polycarbonate, Nylon parameters."
+  ]
+}

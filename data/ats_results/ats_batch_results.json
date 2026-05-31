@@ -1,0 +1,504 @@
+{
+  "ranked_candidates": [
+    {
+      "candidate_id": "resume_die_maintenance_trainee",
+      "filename": "resume_die_maintenance_trainee_cleaned.txt",
+      "job_title_applied": "technician",
+      "is_tech_mismatch": false,
+      "skill_score": 80.0,
+      "experience_score": 100.0,
+      "education_score": 50.0,
+      "semantic_score": 80.44,
+      "final_score": 80.61,
+      "fair_score": 80.26,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 100.0,
+      "rank": 1,
+      "status": "Shortlisted"
+    },
+    {
+      "candidate_id": "resume_die_design_engineer",
+      "filename": "resume_die_design_engineer_cleaned.txt",
+      "job_title_applied": "die design engineer",
+      "is_tech_mismatch": false,
+      "skill_score": 88.89,
+      "experience_score": 66.67,
+      "education_score": 90.0,
+      "semantic_score": 74.59,
+      "final_score": 79.13,
+      "fair_score": 80.31,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 97.6,
+      "rank": 2,
+      "status": "Shortlisted"
+    },
+    {
+      "candidate_id": "resume_2page_multi_col",
+      "filename": "resume_2page_multi_col_cleaned.txt",
+      "job_title_applied": "mold design engineer",
+      "is_tech_mismatch": false,
+      "skill_score": 100.0,
+      "experience_score": 50.0,
+      "education_score": 90.0,
+      "semantic_score": 74.3,
+      "final_score": 77.14,
+      "fair_score": 84.58,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 94.36,
+      "rank": 3,
+      "status": "Shortlisted"
+    },
+    {
+      "candidate_id": "resume_mold_design_engineer",
+      "filename": "resume_mold_design_engineer_cleaned.txt",
+      "job_title_applied": "mold design engineer",
+      "is_tech_mismatch": false,
+      "skill_score": 83.33,
+      "experience_score": 66.67,
+      "education_score": 90.0,
+      "semantic_score": 69.25,
+      "final_score": 76.39,
+      "fair_score": 74.88,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 93.14,
+      "rank": 4,
+      "status": "Shortlisted"
+    },
+    {
+      "candidate_id": "resume_trainee_tool_die",
+      "filename": "resume_trainee_tool_die_cleaned.txt",
+      "job_title_applied": "tool die maker",
+      "is_tech_mismatch": false,
+      "skill_score": 77.78,
+      "experience_score": 67.5,
+      "education_score": 100.0,
+      "semantic_score": 68.42,
+      "final_score": 76.2,
+      "fair_score": 72.16,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 92.84,
+      "rank": 5,
+      "status": "Shortlisted"
+    },
+    {
+      "candidate_id": "resume_1page_single_col",
+      "filename": "resume_1page_single_col_cleaned.txt",
+      "job_title_applied": "tool die maker",
+      "is_tech_mismatch": false,
+      "skill_score": 77.78,
+      "experience_score": 90.0,
+      "education_score": 50.0,
+      "semantic_score": 47.85,
+      "final_score": 69.19,
+      "fair_score": 59.82,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 81.45,
+      "rank": 6,
+      "status": "Review"
+    },
+    {
+      "candidate_id": "resume_progressive_die_maker",
+      "filename": "resume_progressive_die_maker_cleaned.txt",
+      "job_title_applied": "tool die maker",
+      "is_tech_mismatch": false,
+      "skill_score": 44.44,
+      "experience_score": 100.0,
+      "education_score": 100.0,
+      "semantic_score": 54.26,
+      "final_score": 69.12,
+      "fair_score": 50.33,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 81.34,
+      "rank": 7,
+      "status": "Review"
+    },
+    {
+      "candidate_id": "resume_injection_mold_maker",
+      "filename": "resume_injection_mold_maker_cleaned.txt",
+      "job_title_applied": "mold maker",
+      "is_tech_mismatch": false,
+      "skill_score": 66.67,
+      "experience_score": 33.33,
+      "education_score": 80.0,
+      "semantic_score": 64.48,
+      "final_score": 59.79,
+      "fair_score": 65.36,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 66.18,
+      "rank": 8,
+      "status": "Review"
+    },
+    {
+      "candidate_id": "resume_edm_operator",
+      "filename": "resume_edm_operator_cleaned.txt",
+      "job_title_applied": "edm operator",
+      "is_tech_mismatch": false,
+      "skill_score": 50.0,
+      "experience_score": 67.5,
+      "education_score": 50.0,
+      "semantic_score": 56.03,
+      "final_score": 55.88,
+      "fair_score": 53.62,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 59.83,
+      "rank": 9,
+      "status": "Review"
+    },
+    {
+      "candidate_id": "resume_apprentice_tool_maker",
+      "filename": "resume_apprentice_tool_maker_cleaned.txt",
+      "job_title_applied": "tool maker",
+      "is_tech_mismatch": false,
+      "skill_score": 50.0,
+      "experience_score": 56.67,
+      "education_score": 50.0,
+      "semantic_score": 66.52,
+      "final_score": 55.31,
+      "fair_score": 59.91,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 58.9,
+      "rank": 10,
+      "status": "Review"
+    },
+    {
+      "candidate_id": "resume_cnc_machinist",
+      "filename": "resume_cnc_machinist_cleaned.txt",
+      "job_title_applied": "cnc machinist",
+      "is_tech_mismatch": false,
+      "skill_score": 33.33,
+      "experience_score": 67.5,
+      "education_score": 100.0,
+      "semantic_score": 47.23,
+      "final_score": 52.33,
+      "fair_score": 41.67,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 54.06,
+      "rank": 11,
+      "status": "Review"
+    },
+    {
+      "candidate_id": "sample_resume",
+      "filename": "sample_resume_cleaned.txt",
+      "job_title_applied": "cnc machinist",
+      "is_tech_mismatch": false,
+      "skill_score": 33.33,
+      "experience_score": 67.5,
+      "education_score": 100.0,
+      "semantic_score": 27.12,
+      "final_score": 49.32,
+      "fair_score": 29.6,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 49.17,
+      "rank": 12,
+      "status": "Rejected"
+    },
+    {
+      "candidate_id": "resume_mold_shop_helper",
+      "filename": "resume_mold_shop_helper_cleaned.txt",
+      "job_title_applied": "cnc machinist",
+      "is_tech_mismatch": false,
+      "skill_score": 33.33,
+      "experience_score": 67.5,
+      "education_score": 50.0,
+      "semantic_score": 52.74,
+      "final_score": 48.16,
+      "fair_score": 44.98,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 47.29,
+      "rank": 13,
+      "status": "Rejected"
+    },
+    {
+      "candidate_id": "Developer_Sarang_K_ATS_new_wipro",
+      "filename": "Developer_Sarang_K_ATS_new_wipro_cleaned.txt",
+      "job_title_applied": "tool die maker",
+      "is_tech_mismatch": true,
+      "skill_score": 0.0,
+      "experience_score": 10.0,
+      "education_score": 90.0,
+      "semantic_score": 14.95,
+      "final_score": 19.74,
+      "fair_score": 8.97,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 1.12,
+      "rank": 14,
+      "status": "Rejected"
+    },
+    {
+      "candidate_id": "Software_Sarang_K_ATS_new",
+      "filename": "Software_Sarang_K_ATS_new_cleaned.txt",
+      "job_title_applied": "tool die maker",
+      "is_tech_mismatch": true,
+      "skill_score": 0.0,
+      "experience_score": 10.0,
+      "education_score": 90.0,
+      "semantic_score": 14.66,
+      "final_score": 19.66,
+      "fair_score": 8.8,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 0.99,
+      "rank": 15,
+      "status": "Rejected"
+    },
+    {
+      "candidate_id": "FullStack_Developer_Sarang_K_ATS_new (1)",
+      "filename": "FullStack_Developer_Sarang_K_ATS_new (1)_cleaned.txt",
+      "job_title_applied": "tool die maker",
+      "is_tech_mismatch": true,
+      "skill_score": 0.0,
+      "experience_score": 10.0,
+      "education_score": 90.0,
+      "semantic_score": 12.85,
+      "final_score": 19.21,
+      "fair_score": 7.71,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 0.26,
+      "rank": 16,
+      "status": "Rejected"
+    },
+    {
+      "candidate_id": "Front_end_Developer_Sarang_K_ATS_new",
+      "filename": "Front_end_Developer_Sarang_K_ATS_new_cleaned.txt",
+      "job_title_applied": "tool die maker",
+      "is_tech_mismatch": true,
+      "skill_score": 0.0,
+      "experience_score": 10.0,
+      "education_score": 90.0,
+      "semantic_score": 12.18,
+      "final_score": 19.05,
+      "fair_score": 7.31,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 0.0,
+      "rank": 17,
+      "status": "Rejected"
+    }
+  ],
+  "top_candidates": [
+    {
+      "candidate_id": "resume_die_maintenance_trainee",
+      "filename": "resume_die_maintenance_trainee_cleaned.txt",
+      "job_title_applied": "technician",
+      "is_tech_mismatch": false,
+      "skill_score": 80.0,
+      "experience_score": 100.0,
+      "education_score": 50.0,
+      "semantic_score": 80.44,
+      "final_score": 80.61,
+      "fair_score": 80.26,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 100.0,
+      "rank": 1,
+      "status": "Shortlisted"
+    },
+    {
+      "candidate_id": "resume_die_design_engineer",
+      "filename": "resume_die_design_engineer_cleaned.txt",
+      "job_title_applied": "die design engineer",
+      "is_tech_mismatch": false,
+      "skill_score": 88.89,
+      "experience_score": 66.67,
+      "education_score": 90.0,
+      "semantic_score": 74.59,
+      "final_score": 79.13,
+      "fair_score": 80.31,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 97.6,
+      "rank": 2,
+      "status": "Shortlisted"
+    },
+    {
+      "candidate_id": "resume_2page_multi_col",
+      "filename": "resume_2page_multi_col_cleaned.txt",
+      "job_title_applied": "mold design engineer",
+      "is_tech_mismatch": false,
+      "skill_score": 100.0,
+      "experience_score": 50.0,
+      "education_score": 90.0,
+      "semantic_score": 74.3,
+      "final_score": 77.14,
+      "fair_score": 84.58,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 94.36,
+      "rank": 3,
+      "status": "Shortlisted"
+    },
+    {
+      "candidate_id": "resume_mold_design_engineer",
+      "filename": "resume_mold_design_engineer_cleaned.txt",
+      "job_title_applied": "mold design engineer",
+      "is_tech_mismatch": false,
+      "skill_score": 83.33,
+      "experience_score": 66.67,
+      "education_score": 90.0,
+      "semantic_score": 69.25,
+      "final_score": 76.39,
+      "fair_score": 74.88,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 93.14,
+      "rank": 4,
+      "status": "Shortlisted"
+    },
+    {
+      "candidate_id": "resume_trainee_tool_die",
+      "filename": "resume_trainee_tool_die_cleaned.txt",
+      "job_title_applied": "tool die maker",
+      "is_tech_mismatch": false,
+      "skill_score": 77.78,
+      "experience_score": 67.5,
+      "education_score": 100.0,
+      "semantic_score": 68.42,
+      "final_score": 76.2,
+      "fair_score": 72.16,
+      "masked_profile": {
+        "name": "MASKED",
+        "gender": "MASKED",
+        "location": "MASKED",
+        "email": "MASKED"
+      },
+      "normalized_score": 92.84,
+      "rank": 5,
+      "status": "Shortlisted"
+    }
+  ],
+  "summary": {
+    "job_id": "BATCH_01",
+    "summary": {
+      "total_candidates": 17,
+      "shortlisted": 5,
+      "review": 6,
+      "rejected": 6
+    },
+    "top_candidates": [
+      {
+        "candidate_id": "resume_die_maintenance_trainee",
+        "score": 80.61,
+        "status": "Shortlisted"
+      },
+      {
+        "candidate_id": "resume_die_design_engineer",
+        "score": 79.13,
+        "status": "Shortlisted"
+      },
+      {
+        "candidate_id": "resume_2page_multi_col",
+        "score": 77.14,
+        "status": "Shortlisted"
+      },
+      {
+        "candidate_id": "resume_mold_design_engineer",
+        "score": 76.39,
+        "status": "Shortlisted"
+      },
+      {
+        "candidate_id": "resume_trainee_tool_die",
+        "score": 76.2,
+        "status": "Shortlisted"
+      }
+    ]
+  }
+}

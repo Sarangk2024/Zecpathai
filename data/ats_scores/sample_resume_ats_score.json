@@ -1,0 +1,16 @@
+{
+  "candidate_id": "sample_resume",
+  "final_score": 49.32,
+  "weights_used": {
+    "skills": 0.45,
+    "experience": 0.3,
+    "education": 0.1,
+    "semantic": 0.15
+  },
+  "breakdown": {
+    "skill_score": 33.33,
+    "experience_score": 67.5,
+    "education_score": 100.0,
+    "semantic_score": 27.12
+  }
+}

@@ -1,0 +1,342 @@
+[
+  {
+    "candidate_id": "resume_die_maintenance_trainee",
+    "final_score": 80.61,
+    "skill_score": 80.0,
+    "experience_score": 100.0,
+    "education_score": 50.0,
+    "semantic_score": 80.44,
+    "rank": 1,
+    "status": "Shortlisted",
+    "fair_score": 80.26,
+    "normalized_score": 100.0,
+    "masked_profile": {
+      "candidate_id": "resume_die_maintenance_trainee",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "resume_die_design_engineer",
+    "final_score": 79.13,
+    "skill_score": 88.89,
+    "experience_score": 66.67,
+    "education_score": 90.0,
+    "semantic_score": 74.59,
+    "rank": 2,
+    "status": "Shortlisted",
+    "fair_score": 80.31,
+    "normalized_score": 97.6,
+    "masked_profile": {
+      "candidate_id": "resume_die_design_engineer",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "resume_2page_multi_col",
+    "final_score": 77.14,
+    "skill_score": 100.0,
+    "experience_score": 50.0,
+    "education_score": 90.0,
+    "semantic_score": 74.3,
+    "rank": 3,
+    "status": "Shortlisted",
+    "fair_score": 84.58,
+    "normalized_score": 94.36,
+    "masked_profile": {
+      "candidate_id": "resume_2page_multi_col",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "resume_mold_design_engineer",
+    "final_score": 76.39,
+    "skill_score": 83.33,
+    "experience_score": 66.67,
+    "education_score": 90.0,
+    "semantic_score": 69.25,
+    "rank": 4,
+    "status": "Shortlisted",
+    "fair_score": 74.88,
+    "normalized_score": 93.14,
+    "masked_profile": {
+      "candidate_id": "resume_mold_design_engineer",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "resume_trainee_tool_die",
+    "final_score": 76.2,
+    "skill_score": 77.78,
+    "experience_score": 67.5,
+    "education_score": 100.0,
+    "semantic_score": 68.42,
+    "rank": 5,
+    "status": "Shortlisted",
+    "fair_score": 72.16,
+    "normalized_score": 92.84,
+    "masked_profile": {
+      "candidate_id": "resume_trainee_tool_die",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "resume_1page_single_col",
+    "final_score": 69.19,
+    "skill_score": 77.78,
+    "experience_score": 90.0,
+    "education_score": 50.0,
+    "semantic_score": 47.85,
+    "rank": 6,
+    "status": "Review",
+    "fair_score": 59.82,
+    "normalized_score": 81.45,
+    "masked_profile": {
+      "candidate_id": "resume_1page_single_col",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "resume_progressive_die_maker",
+    "final_score": 69.12,
+    "skill_score": 44.44,
+    "experience_score": 100.0,
+    "education_score": 100.0,
+    "semantic_score": 54.26,
+    "rank": 7,
+    "status": "Review",
+    "fair_score": 50.33,
+    "normalized_score": 81.34,
+    "masked_profile": {
+      "candidate_id": "resume_progressive_die_maker",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "resume_injection_mold_maker",
+    "final_score": 59.79,
+    "skill_score": 66.67,
+    "experience_score": 33.33,
+    "education_score": 80.0,
+    "semantic_score": 64.48,
+    "rank": 8,
+    "status": "Review",
+    "fair_score": 65.36,
+    "normalized_score": 66.18,
+    "masked_profile": {
+      "candidate_id": "resume_injection_mold_maker",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "resume_edm_operator",
+    "final_score": 55.88,
+    "skill_score": 50.0,
+    "experience_score": 67.5,
+    "education_score": 50.0,
+    "semantic_score": 56.03,
+    "rank": 9,
+    "status": "Review",
+    "fair_score": 53.62,
+    "normalized_score": 59.83,
+    "masked_profile": {
+      "candidate_id": "resume_edm_operator",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "resume_apprentice_tool_maker",
+    "final_score": 55.31,
+    "skill_score": 50.0,
+    "experience_score": 56.67,
+    "education_score": 50.0,
+    "semantic_score": 66.52,
+    "rank": 10,
+    "status": "Review",
+    "fair_score": 59.91,
+    "normalized_score": 58.9,
+    "masked_profile": {
+      "candidate_id": "resume_apprentice_tool_maker",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "resume_cnc_machinist",
+    "final_score": 52.33,
+    "skill_score": 33.33,
+    "experience_score": 67.5,
+    "education_score": 100.0,
+    "semantic_score": 47.23,
+    "rank": 11,
+    "status": "Review",
+    "fair_score": 41.67,
+    "normalized_score": 54.06,
+    "masked_profile": {
+      "candidate_id": "resume_cnc_machinist",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "sample_resume",
+    "final_score": 49.32,
+    "skill_score": 33.33,
+    "experience_score": 67.5,
+    "education_score": 100.0,
+    "semantic_score": 27.12,
+    "rank": 12,
+    "status": "Rejected",
+    "fair_score": 29.6,
+    "normalized_score": 49.17,
+    "masked_profile": {
+      "candidate_id": "sample_resume",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "resume_mold_shop_helper",
+    "final_score": 48.16,
+    "skill_score": 33.33,
+    "experience_score": 67.5,
+    "education_score": 50.0,
+    "semantic_score": 52.74,
+    "rank": 13,
+    "status": "Rejected",
+    "fair_score": 44.98,
+    "normalized_score": 47.29,
+    "masked_profile": {
+      "candidate_id": "resume_mold_shop_helper",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "Developer_Sarang_K_ATS_new_wipro",
+    "final_score": 19.74,
+    "skill_score": 0.0,
+    "experience_score": 10.0,
+    "education_score": 90.0,
+    "semantic_score": 14.95,
+    "rank": 14,
+    "status": "Rejected",
+    "fair_score": 8.97,
+    "normalized_score": 1.12,
+    "masked_profile": {
+      "candidate_id": "Developer_Sarang_K_ATS_new_wipro",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "Software_Sarang_K_ATS_new",
+    "final_score": 19.66,
+    "skill_score": 0.0,
+    "experience_score": 10.0,
+    "education_score": 90.0,
+    "semantic_score": 14.66,
+    "rank": 15,
+    "status": "Rejected",
+    "fair_score": 8.8,
+    "normalized_score": 0.99,
+    "masked_profile": {
+      "candidate_id": "Software_Sarang_K_ATS_new",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "FullStack_Developer_Sarang_K_ATS_new (1)",
+    "final_score": 19.21,
+    "skill_score": 0.0,
+    "experience_score": 10.0,
+    "education_score": 90.0,
+    "semantic_score": 12.85,
+    "rank": 16,
+    "status": "Rejected",
+    "fair_score": 7.71,
+    "normalized_score": 0.26,
+    "masked_profile": {
+      "candidate_id": "FullStack_Developer_Sarang_K_ATS_new (1)",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  },
+  {
+    "candidate_id": "Front_end_Developer_Sarang_K_ATS_new",
+    "final_score": 19.05,
+    "skill_score": 0.0,
+    "experience_score": 10.0,
+    "education_score": 90.0,
+    "semantic_score": 12.18,
+    "rank": 17,
+    "status": "Rejected",
+    "fair_score": 7.31,
+    "normalized_score": 0.0,
+    "masked_profile": {
+      "candidate_id": "Front_end_Developer_Sarang_K_ATS_new",
+      "name": "MASKED",
+      "gender": "MASKED",
+      "location": "MASKED",
+      "email": "MASKED",
+      "phone": "MASKED"
+    }
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "candidate_id": "resume_injection_mold_maker",
+  "final_score": 59.79,
+  "weights_used": {
+    "skills": 0.35,
+    "experience": 0.25,
+    "education": 0.15,
+    "semantic": 0.25
+  },
+  "breakdown": {
+    "skill_score": 66.67,
+    "experience_score": 33.33,
+    "education_score": 80.0,
+    "semantic_score": 64.48
+  }
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "skill": "blueprint_reading",
+    "confidence": 0.95
+  },
+  {
+    "skill": "lathe",
+    "confidence": 0.95
+  },
+  {
+    "skill": "metrology",
+    "confidence": 0.95
+  },
+  {
+    "skill": "stamping",
+    "confidence": 0.95
+  },
+  {
+    "skill": "tooling_components",
+    "confidence": 0.95
+  },
+  {
+    "skill": "grinding",
+    "confidence": 0.85
+  },
+  {
+    "skill": "die_assembly",
+    "confidence": 0.85
+  },
+  {
+    "skill": "jigs_fixtures",
+    "confidence": 0.85
+  },
+  {
+    "skill": "drilling",
+    "confidence": 0.85
+  },
+  {
+    "skill": "shaping",
+    "confidence": 0.75
+  },
+  {
+    "skill": "cad_cam",
+    "confidence": 0.75
+  },
+  {
+    "skill": "milling",
+    "confidence": 0.75
+  },
+  {
+    "skill": "clearance",
+    "confidence": 0.75
+  }
+]

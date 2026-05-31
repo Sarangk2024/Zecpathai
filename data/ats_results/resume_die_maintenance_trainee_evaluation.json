@@ -1,0 +1,21 @@
+{
+  "candidate_id": "resume_die_maintenance_trainee",
+  "filename": "resume_die_maintenance_trainee_cleaned.txt",
+  "job_title_applied": "technician",
+  "is_tech_mismatch": false,
+  "skill_score": 80.0,
+  "experience_score": 100.0,
+  "education_score": 50.0,
+  "semantic_score": 80.44,
+  "final_score": 80.61,
+  "fair_score": 80.26,
+  "masked_profile": {
+    "name": "MASKED",
+    "gender": "MASKED",
+    "location": "MASKED",
+    "email": "MASKED"
+  },
+  "normalized_score": 100.0,
+  "rank": 1,
+  "status": "Shortlisted"
+}

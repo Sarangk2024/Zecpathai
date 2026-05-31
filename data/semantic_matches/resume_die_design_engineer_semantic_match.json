@@ -1,0 +1,12 @@
+{
+  "candidate_id": "resume_die_design_engineer",
+  "target_jd": "die design engineer",
+  "is_mismatched_tech": false,
+  "semantic_scores": {
+    "skills_similarity": 0.8147,
+    "experience_similarity": 0.6618,
+    "project_similarity": 0.0,
+    "final_similarity_score": 74.59
+  },
+  "match_classification": "Strong Match"
+}

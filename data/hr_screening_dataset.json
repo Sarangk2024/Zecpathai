@@ -1,0 +1,64 @@
+[
+  {
+    "question_id": "Q1",
+    "question": "Can you introduce yourself?",
+    "category": "introduction",
+    "expected_answer_type": "text",
+    "mandatory": true,
+    "importance": 5,
+    "tags": ["communication", "confidence"]
+  },
+  {
+    "question_id": "Q2",
+    "question": "What is your highest qualification?",
+    "category": "education",
+    "expected_answer_type": "text",
+    "mandatory": true,
+    "importance": 4,
+    "tags": ["education"]
+  },
+  {
+    "question_id": "Q3",
+    "question": "How many years of experience do you have?",
+    "category": "experience",
+    "expected_answer_type": "number",
+    "mandatory": true,
+    "importance": 5,
+    "tags": ["experience"]
+  },
+  {
+    "question_id": "Q4",
+    "question": "What are your key technical skills?",
+    "category": "skills",
+    "expected_answer_type": "list",
+    "mandatory": true,
+    "importance": 5,
+    "tags": ["skills"]
+  },
+  {
+    "question_id": "Q5",
+    "question": "Which city are you currently located in?",
+    "category": "location",
+    "expected_answer_type": "text",
+    "mandatory": true,
+    "importance": 3,
+    "tags": ["location"]
+  },
+  {
+    "question_id": "Q6",
+    "question": "What are your salary expectations?",
+    "category": "number",
+    "mandatory": false,
+    "importance": 3,
+    "tags": ["salary"]
+  },
+  {
+    "question_id": "Q7",
+    "question": "What is your notice period?",
+    "category": "notice_period",
+    "expected_answer_type": "text",
+    "mandatory": true,
+    "importance": 4,
+    "tags": ["availability"]
+  }
+]

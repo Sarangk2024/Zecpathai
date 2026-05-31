@@ -1,0 +1,16 @@
+{
+  "candidate_id": "resume_cnc_machinist",
+  "final_score": 52.33,
+  "weights_used": {
+    "skills": 0.45,
+    "experience": 0.3,
+    "education": 0.1,
+    "semantic": 0.15
+  },
+  "breakdown": {
+    "skill_score": 33.33,
+    "experience_score": 67.5,
+    "education_score": 100.0,
+    "semantic_score": 47.23
+  }
+}

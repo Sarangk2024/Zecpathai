@@ -1,0 +1,12 @@
+{
+  "candidate_id": "resume_edm_operator",
+  "target_jd": "edm operator",
+  "is_mismatched_tech": false,
+  "semantic_scores": {
+    "skills_similarity": 0.6105,
+    "experience_similarity": 0.4989,
+    "project_similarity": 0.0,
+    "final_similarity_score": 56.03
+  },
+  "match_classification": "Moderate Match"
+}

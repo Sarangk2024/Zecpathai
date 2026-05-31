@@ -1,0 +1,21 @@
+{
+  "candidate_id": "resume_trainee_tool_die",
+  "filename": "resume_trainee_tool_die_cleaned.txt",
+  "job_title_applied": "tool die maker",
+  "is_tech_mismatch": false,
+  "skill_score": 77.78,
+  "experience_score": 67.5,
+  "education_score": 100.0,
+  "semantic_score": 68.42,
+  "final_score": 76.2,
+  "fair_score": 72.16,
+  "masked_profile": {
+    "name": "MASKED",
+    "gender": "MASKED",
+    "location": "MASKED",
+    "email": "MASKED"
+  },
+  "normalized_score": 92.84,
+  "rank": 5,
+  "status": "Shortlisted"
+}

@@ -1,0 +1,70 @@
+[
+  {
+    "skill": "javascript",
+    "confidence": 0.95
+  },
+  {
+    "skill": "git",
+    "confidence": 0.95
+  },
+  {
+    "skill": "docker",
+    "confidence": 0.95
+  },
+  {
+    "skill": "fastapi",
+    "confidence": 0.95
+  },
+  {
+    "skill": "css",
+    "confidence": 0.95
+  },
+  {
+    "skill": "machine_learning",
+    "confidence": 0.95
+  },
+  {
+    "skill": "jwt",
+    "confidence": 0.95
+  },
+  {
+    "skill": "react",
+    "confidence": 0.95
+  },
+  {
+    "skill": "python",
+    "confidence": 0.85
+  },
+  {
+    "skill": "asp_net",
+    "confidence": 0.85
+  },
+  {
+    "skill": "express",
+    "confidence": 0.85
+  },
+  {
+    "skill": "html",
+    "confidence": 0.85
+  },
+  {
+    "skill": "node",
+    "confidence": 0.85
+  },
+  {
+    "skill": "sql",
+    "confidence": 0.85
+  },
+  {
+    "skill": "leadership",
+    "confidence": 0.75
+  },
+  {
+    "skill": "mongodb",
+    "confidence": 0.75
+  },
+  {
+    "skill": "oop",
+    "confidence": 0.75
+  }
+]

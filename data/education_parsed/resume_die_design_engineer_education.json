@@ -1,0 +1,46 @@
+{
+  "candidate_id": "resume_die_design_engineer",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "B.Tech",
+        "field": "Mechanical Engineering Anna",
+        "institution": "Anna University, Chennai",
+        "year": 2021,
+        "confidence": 0.9
+      }
+    ],
+    "certifications": [
+      {
+        "name": "Solidworks",
+        "category": "CAD_CAM",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Autocad",
+        "category": "CAD_CAM",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Design Software: SolidWorks Sheetmetal, AutoCAD, CATIA V5.",
+        "category": "CAD_CAM",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Gdt",
+        "category": "Quality",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Standards: GDT, tolerance stack-up analysis, ISO standards.",
+        "category": "Quality",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Die Design",
+        "category": "Tooling",
+        "relevance_score": 0.5
+      }
+    ]
+  }
+}

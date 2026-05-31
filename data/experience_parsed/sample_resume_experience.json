@@ -1,0 +1,28 @@
+{
+  "candidate_file": "sample_resume_cleaned.txt",
+  "extracted_experiences": [
+    {
+      "company": "ABC Tool Room Services",
+      "start_year": 2022,
+      "start_month": 1,
+      "start_month_idx": 24265,
+      "end_year": 2026,
+      "end_month": 1,
+      "end_month_idx": 24313,
+      "duration_months": 48,
+      "duration_years": 4
+    }
+  ],
+  "extracted_roles": [
+    "tool maker",
+    "machinist",
+    "cnc machinist",
+    "engineer"
+  ],
+  "total_experience_years": 4,
+  "total_experience_months": 48,
+  "detected_gaps": [],
+  "detected_overlaps": [],
+  "target_job_role": "cnc machinist",
+  "role_relevance_score": 67.5
+}

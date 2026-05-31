@@ -1,0 +1,31 @@
+{
+  "candidate_id": "Front_end_Developer_Sarang_K_ATS_new",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "B.Tech",
+        "field": "Computer Science And Engineering",
+        "institution": "College of Engineering Thalassery, KeralaCGPA",
+        "year": 2026,
+        "confidence": 0.9
+      }
+    ],
+    "certifications": [
+      {
+        "name": "Backend:Node.js, Express.js, FastAPI, Python",
+        "category": "Programming",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Machine Learning",
+        "category": "AI",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Scrum",
+        "category": "Management",
+        "relevance_score": 0.5
+      }
+    ]
+  }
+}

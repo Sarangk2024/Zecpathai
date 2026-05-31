@@ -1,0 +1,22 @@
+{
+  "other": [
+    "KARTIK MEHTA",
+    "CNC Machinist Bangalore, India 91-9111223344 kartik.mehta@email.com"
+  ],
+  "summary": [
+    "VMC CNC ProgrammerMachinist with 4 years of experience writing G-code, setting work offsets, and cutting precision tooling components. Expert in programming Fanuc and Siemens controls, maximizing tool life, and interpreting mechanical GDT engineering prints."
+  ],
+  "experience": [
+    "CNC Operator Programmer - Bharat Forge Ltd 2022 - Present Programmed 3-axis Vertical Machining Centers VMC for core mold cavity blocks. Determined feed rates, cutting speeds, and selected appropriate carbide cutters for D2 steel. Performed work offset settings G54-G59 and adjusted tool wear offsets. Inspected final dimensions using digital vernier calipers and height gauges to ensure 0.01mm compliance."
+  ],
+  "education": [
+    "Diploma in Mechanical Engineering",
+    "State Board of Technical Education, Karnataka"
+  ],
+  "skills": [
+    "Programming: Manual G-CodeM-Code, basic Mastercam layouts.",
+    "Controllers: Fanuc, Siemens Sinumerik, Haas controllers.",
+    "Operations: Face milling, profile contouring, pocketing, deep-hole drilling.",
+    "Inspections: Dial bore indicators, thread gauges, digital micrometers."
+  ]
+}

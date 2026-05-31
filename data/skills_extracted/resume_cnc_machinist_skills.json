@@ -1,0 +1,26 @@
+[
+  {
+    "skill": "cnc",
+    "confidence": 0.95
+  },
+  {
+    "skill": "metrology",
+    "confidence": 0.95
+  },
+  {
+    "skill": "gd_t",
+    "confidence": 0.85
+  },
+  {
+    "skill": "tool_steels",
+    "confidence": 0.85
+  },
+  {
+    "skill": "milling",
+    "confidence": 0.75
+  },
+  {
+    "skill": "drilling",
+    "confidence": 0.75
+  }
+]

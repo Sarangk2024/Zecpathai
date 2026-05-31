@@ -1,0 +1,48 @@
+Sarang K
+Kannur, Kerala 91 8078738602 sarangsajeevan629@gmail.com
+linkedin.cominsarangk2003 github.comSarangk2024 Portfolio
+Professional Summary
+Software Developer with hands-on experience building and deploying ASP.NET MVC REST APIs, backend systems, and ML in-
+ference pipelines across two internships and multiple independently scoped projects. Proficient in designing fully functional software
+systems - from database schema and API development to defect resolution and end-to-end documentation. Comfortable following
+industry-standard operating procedures, maintaining project reports, and delivering first-time-right solutions that meet client specifica-
+tions. Seeking a Junior Developer role at Wipro to contribute to scalable digital transformation solutions.
+Skills
+Backend APIs:ASP.NET, ASP.NET Web API, RESTful API Design, JWT Authentication, Role-Based Access Control
+Languages:C, Python, JavaScript, Java, C
+Databases:MySQL, PostgreSQL, MongoDB, Query Optimization, Normalized Schema Design
+Frontend:React, HTML, CSS, JavaScript ES6
+DevOps Tools:Docker, Git, CICD Pipelines, Postman, Swagger, Render, Vercel
+AI ML:TensorFlow, EfficientNet, MobileNetV2, Image Classification, Model Training Evaluation
+Engineering Practices:AgileScrum, OOP, DBMS, Debugging, Defect Fixing, Technical Documentation
+Experience
+Software Developer Intern Eqsoft Business Solutions Pvt LtdJun 2025 - Jul 2025
+ - Designed and developed12REST API endpoints usingASP.NET MVCto power client-facing business workflows, backed by a
+normalized MySQL database produced full Postman-tested API documentation for client handoff
+ - ImplementedJWT-based authenticationand 3-tier Role-Based Access Control RBAC, enforcing security at the API layer across
+all business-critical routes
+ - Performed MySQL query optimization through index tuning, reducing average execution time by35 fixed defects raised during
+integration testing, achieving zero major issues post-deployment
+ - Maintained weekly status reports and a structured change log for all API modifications, ensuring complete traceability of design
+decisions for the client
+AI Intern Infosys Springboard Dec 2025 - Mar 2026
+ - Designed and delivered a complete ML pipeline - data ingestion, augmentation, model training, and inference - usingTensorFlow
+and Python validated performance on held-out test sets and documented results for reproducibility and client review
+ - Improved EfficientNet model validation accuracy from80 to 92across10 crop categoriesthrough iterative hyperparameter
+tuning, following structured development and QA procedures throughout
+Projects
+AgriDetect AIPython, FastAPI, EfficientNet, DockerLive Demo
+ - Architected8FastAPI endpoints with JWT-secured access and sub-300ms average response time containerized with Docker and
+deployed via automated CICD pipeline - achieving92 accuracyacross 10 crop disease categories
+ - Produced complete API documentation using Swagger and maintained deployment logs to support reproducibility and future feature
+upgrades
+Blockchain Product Verification SystemNode.js, Express.js, MongoDB, ReactLive Demo
+ - Engineered10backend API endpoints for product authentication and blockchain verification using Node.js and Express.js, with full
+Postman-tested documentation covering all requestresponse contracts
+ - Designed an indexed MongoDB schema to prevent duplicate and fraudulent product registration integrated Web3.js for on-chain
+transaction calls on Ethereum testnet Sepolia
+Education
+B.Tech in Computer Science and Engineering 2022 - 2026
+College of Engineering Thalassery, KeralaCGPA: 8.88 10
+Certifications
+Infosys AI Virtual Internship Certificate IBM Full Stack Software Developer Professional Certificate UPCode AI Bootcamp Certificate

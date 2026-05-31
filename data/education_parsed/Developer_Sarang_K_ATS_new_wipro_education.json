@@ -1,0 +1,26 @@
+{
+  "candidate_id": "Developer_Sarang_K_ATS_new_wipro",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "B.Tech",
+        "field": "Computer Science And Engineering",
+        "institution": "College of Engineering Thalassery, KeralaCGPA",
+        "year": 2026,
+        "confidence": 0.9
+      }
+    ],
+    "certifications": [
+      {
+        "name": "Languages:C, Python, JavaScript, Java, C",
+        "category": "Programming",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Scrum",
+        "category": "Management",
+        "relevance_score": 0.5
+      }
+    ]
+  }
+}

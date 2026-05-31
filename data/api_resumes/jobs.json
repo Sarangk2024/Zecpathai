@@ -1,0 +1,74 @@
+{
+  "JOB203006": {
+    "job_id": "JOB203006",
+    "resume_id": "R124371",
+    "candidate_id": "C999",
+    "job_code": "cnc machinist",
+    "status": "completed",
+    "created_at": "2026-06-09T04:19:01.104711Z",
+    "result_url": "/ats/result/C999"
+  },
+  "JOB279473": {
+    "job_id": "JOB279473",
+    "resume_id": "R130730",
+    "candidate_id": "C999",
+    "job_code": "cnc machinist",
+    "status": "completed",
+    "created_at": "2026-06-09T04:21:59.787049Z",
+    "result_url": "/ats/result/C999"
+  },
+  "JOB129905": {
+    "job_id": "JOB129905",
+    "resume_id": "R183919",
+    "candidate_id": "C999",
+    "job_code": "cnc machinist",
+    "status": "completed",
+    "created_at": "2026-06-09T04:27:40.518339Z",
+    "result_url": "/ats/result/C999"
+  },
+  "JOB241599": {
+    "job_id": "JOB241599",
+    "resume_id": "R182370",
+    "candidate_id": "C1",
+    "job_code": "tool die maker",
+    "status": "completed",
+    "created_at": "2026-06-09T04:50:32.909181Z",
+    "result_url": "/ats/result/C1"
+  },
+  "JOB161551": {
+    "job_id": "JOB161551",
+    "resume_id": "R317097",
+    "candidate_id": "C999",
+    "job_code": "cnc machinist",
+    "status": "completed",
+    "created_at": "2026-06-22T04:22:52.231789Z",
+    "result_url": "/ats/result/C999"
+  },
+  "JOB241697": {
+    "job_id": "JOB241697",
+    "resume_id": "R155611",
+    "candidate_id": "C999",
+    "job_code": "cnc machinist",
+    "status": "completed",
+    "created_at": "2026-06-22T04:27:32.793944Z",
+    "result_url": "/ats/result/C999"
+  },
+  "JOB329214": {
+    "job_id": "JOB329214",
+    "resume_id": "R706883",
+    "candidate_id": "C999",
+    "job_code": "cnc machinist",
+    "status": "completed",
+    "created_at": "2026-06-22T09:24:51.863500Z",
+    "result_url": "/ats/result/C999"
+  },
+  "JOB134044": {
+    "job_id": "JOB134044",
+    "resume_id": "R133648",
+    "candidate_id": "C999",
+    "job_code": "cnc machinist",
+    "status": "completed",
+    "created_at": "2026-07-13T05:07:31.556977Z",
+    "result_url": "/ats/result/C999"
+  }
+}

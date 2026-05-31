@@ -1,0 +1,481 @@
+{
+  "R181578": {
+    "resume_id": "R181578",
+    "candidate_id": "C999",
+    "job_id": "J101",
+    "filename": "kartik_resume.txt",
+    "raw_path": "data/api_resumes\\R181578.txt",
+    "clean_path": "data/api_resumes\\R181578_cleaned.txt",
+    "uploaded_at": "2026-06-09T04:17:26.940240Z",
+    "parsed_profile": {
+      "skills": [
+        "cnc",
+        "milling",
+        "grinding"
+      ],
+      "experience": [
+        {
+          "company": "CNC Operator Programmer - Bharat Forge Ltd",
+          "start_year": 2022,
+          "start_month": 1,
+          "start_month_idx": 24265,
+          "end_year": 2026,
+          "end_month": 6,
+          "end_month_idx": 24318,
+          "duration_months": 53,
+          "duration_years": 4
+        }
+      ],
+      "education": [
+        {
+          "degree": "Diploma",
+          "field": "Mechanical Engineering     State",
+          "institution": "State Board of Technical Education",
+          "year_of_completion": "2021"
+        }
+      ],
+      "roles": [
+        "machinist",
+        "engineer",
+        "operator"
+      ]
+    }
+  },
+  "R124371": {
+    "resume_id": "R124371",
+    "candidate_id": "C999",
+    "job_id": "J101",
+    "filename": "kartik_resume.txt",
+    "raw_path": "data/api_resumes\\R124371.txt",
+    "clean_path": "data/api_resumes\\R124371_cleaned.txt",
+    "uploaded_at": "2026-06-09T04:18:21.657981Z",
+    "parsed_profile": {
+      "skills": [
+        "cnc",
+        "grinding",
+        "milling"
+      ],
+      "experience": [
+        {
+          "company": "CNC Operator Programmer - Bharat Forge Ltd",
+          "start_year": 2022,
+          "start_month": 1,
+          "start_month_idx": 24265,
+          "end_year": 2026,
+          "end_month": 6,
+          "end_month_idx": 24318,
+          "duration_months": 53,
+          "duration_years": 4
+        }
+      ],
+      "education": [
+        {
+          "degree": "Diploma",
+          "field": "Mechanical Engineering     State",
+          "institution": "State Board of Technical Education",
+          "year_of_completion": "2021"
+        }
+      ],
+      "roles": [
+        "operator",
+        "machinist",
+        "engineer"
+      ]
+    }
+  },
+  "R130730": {
+    "resume_id": "R130730",
+    "candidate_id": "C999",
+    "job_id": "J101",
+    "filename": "kartik_resume.txt",
+    "raw_path": "data/api_resumes\\R130730.txt",
+    "clean_path": "data/api_resumes\\R130730_cleaned.txt",
+    "uploaded_at": "2026-06-09T04:20:30.384837Z",
+    "parsed_profile": {
+      "skills": [
+        "cnc",
+        "grinding",
+        "milling"
+      ],
+      "experience": [
+        {
+          "company": "CNC Operator Programmer - Bharat Forge Ltd",
+          "start_year": 2022,
+          "start_month": 1,
+          "start_month_idx": 24265,
+          "end_year": 2026,
+          "end_month": 6,
+          "end_month_idx": 24318,
+          "duration_months": 53,
+          "duration_years": 4
+        }
+      ],
+      "education": [
+        {
+          "degree": "Diploma",
+          "field": "Mechanical Engineering     State",
+          "institution": "State Board of Technical Education",
+          "year_of_completion": "2021"
+        }
+      ],
+      "roles": [
+        "engineer",
+        "machinist",
+        "operator"
+      ]
+    }
+  },
+  "R183919": {
+    "resume_id": "R183919",
+    "candidate_id": "C999",
+    "job_id": "J101",
+    "filename": "kartik_resume.txt",
+    "raw_path": "data/api_resumes\\R183919.txt",
+    "clean_path": "data/api_resumes\\R183919_cleaned.txt",
+    "uploaded_at": "2026-06-09T04:27:10.741320Z",
+    "parsed_profile": {
+      "skills": [
+        "cnc",
+        "grinding",
+        "milling"
+      ],
+      "experience": [
+        {
+          "company": "CNC Operator Programmer - Bharat Forge Ltd",
+          "start_year": 2022,
+          "start_month": 1,
+          "start_month_idx": 24265,
+          "end_year": 2026,
+          "end_month": 6,
+          "end_month_idx": 24318,
+          "duration_months": 53,
+          "duration_years": 4
+        }
+      ],
+      "education": [
+        {
+          "degree": "Diploma",
+          "field": "Mechanical Engineering     State",
+          "institution": "State Board of Technical Education",
+          "year_of_completion": "2021"
+        }
+      ],
+      "roles": [
+        "machinist",
+        "engineer",
+        "operator"
+      ]
+    }
+  },
+  "R182370": {
+    "resume_id": "R182370",
+    "candidate_id": "C1",
+    "job_id": "J1",
+    "filename": "Developer_Sarang_K_ATS_new_wipro.pdf",
+    "raw_path": "data/api_resumes\\R182370.pdf",
+    "clean_path": "data/api_resumes\\R182370_cleaned.txt",
+    "uploaded_at": "2026-06-09T04:39:19.508819Z",
+    "parsed_profile": {
+      "skills": [
+        "machine_learning",
+        "asp_net",
+        "mongodb",
+        "docker",
+        "javascript",
+        "sql",
+        "jwt",
+        "c_lang",
+        "express",
+        "git",
+        "python",
+        "tensorflow",
+        "dbms",
+        "node",
+        "fastapi",
+        "html",
+        "react",
+        "css",
+        "oop",
+        "java"
+      ],
+      "experience": [
+        {
+          "company": "Software Developer Intern Eqsoft Business Solutions Pvt Ltd",
+          "start_year": 2025,
+          "start_month": 6,
+          "start_month_idx": 24306,
+          "end_year": 2025,
+          "end_month": 7,
+          "end_month_idx": 24307,
+          "duration_months": 1,
+          "duration_years": 0
+        },
+        {
+          "company": "AI Intern Infosys Springboard",
+          "start_year": 2025,
+          "start_month": 12,
+          "start_month_idx": 24312,
+          "end_year": 2026,
+          "end_month": 3,
+          "end_month_idx": 24315,
+          "duration_months": 3,
+          "duration_years": 0
+        }
+      ],
+      "education": [
+        {
+          "degree": "B.Tech",
+          "field": "Computer Science And Engineering",
+          "institution": "College of Engineering Thalassery, KeralaCGPA",
+          "year_of_completion": "2026"
+        }
+      ],
+      "roles": [
+        "software developer",
+        "engineer",
+        "developer",
+        "intern"
+      ]
+    }
+  },
+  "R317097": {
+    "resume_id": "R317097",
+    "candidate_id": "C999",
+    "job_id": "J101",
+    "filename": "kartik_resume.txt",
+    "raw_path": "data/api_resumes\\R317097.txt",
+    "clean_path": "data/api_resumes\\R317097_cleaned.txt",
+    "uploaded_at": "2026-06-22T04:22:47.868429Z",
+    "parsed_profile": {
+      "skills": [
+        "cnc",
+        "milling",
+        "grinding"
+      ],
+      "experience": [
+        {
+          "company": "CNC Operator Programmer - Bharat Forge Ltd",
+          "start_year": 2022,
+          "start_month": 1,
+          "start_month_idx": 24265,
+          "end_year": 2026,
+          "end_month": 6,
+          "end_month_idx": 24318,
+          "duration_months": 53,
+          "duration_years": 4
+        }
+      ],
+      "education": [
+        {
+          "degree": "Diploma",
+          "field": "Mechanical Engineering     State",
+          "institution": "State Board of Technical Education",
+          "year_of_completion": "2021"
+        }
+      ],
+      "roles": [
+        "operator",
+        "engineer",
+        "machinist"
+      ]
+    }
+  },
+  "R155611": {
+    "resume_id": "R155611",
+    "candidate_id": "C999",
+    "job_id": "J101",
+    "filename": "kartik_resume.txt",
+    "raw_path": "data/api_resumes\\R155611.txt",
+    "clean_path": "data/api_resumes\\R155611_cleaned.txt",
+    "uploaded_at": "2026-06-22T04:27:29.387658Z",
+    "parsed_profile": {
+      "skills": [
+        "cnc",
+        "milling",
+        "grinding"
+      ],
+      "experience": [
+        {
+          "company": "CNC Operator Programmer - Bharat Forge Ltd",
+          "start_year": 2022,
+          "start_month": 1,
+          "start_month_idx": 24265,
+          "end_year": 2026,
+          "end_month": 6,
+          "end_month_idx": 24318,
+          "duration_months": 53,
+          "duration_years": 4
+        }
+      ],
+      "education": [
+        {
+          "degree": "Diploma",
+          "field": "Mechanical Engineering     State",
+          "institution": "State Board of Technical Education",
+          "year_of_completion": "2021"
+        }
+      ],
+      "roles": [
+        "operator",
+        "engineer",
+        "machinist"
+      ]
+    }
+  },
+  "R706883": {
+    "resume_id": "R706883",
+    "candidate_id": "C999",
+    "job_id": "J101",
+    "filename": "kartik_resume.txt",
+    "raw_path": "data/api_resumes\\R706883.txt",
+    "clean_path": "data/api_resumes\\R706883_cleaned.txt",
+    "uploaded_at": "2026-06-22T09:24:48.267925Z",
+    "parsed_profile": {
+      "skills": [
+        "cnc",
+        "grinding",
+        "milling"
+      ],
+      "experience": [
+        {
+          "company": "CNC Operator Programmer - Bharat Forge Ltd",
+          "start_year": 2022,
+          "start_month": 1,
+          "start_month_idx": 24265,
+          "end_year": 2026,
+          "end_month": 6,
+          "end_month_idx": 24318,
+          "duration_months": 53,
+          "duration_years": 4
+        }
+      ],
+      "education": [
+        {
+          "degree": "Diploma",
+          "field": "Mechanical Engineering     State",
+          "institution": "State Board of Technical Education",
+          "year_of_completion": "2021"
+        }
+      ],
+      "roles": [
+        "operator",
+        "machinist",
+        "engineer"
+      ]
+    }
+  },
+  "R861201": {
+    "resume_id": "R861201",
+    "candidate_id": "C10",
+    "job_id": "J10",
+    "filename": "Software_Sarang_K_ATS_new.pdf",
+    "raw_path": "data/api_resumes\\R861201.pdf",
+    "clean_path": "data/api_resumes\\R861201_cleaned.txt",
+    "uploaded_at": "2026-06-22T09:25:38.440112Z",
+    "parsed_profile": {
+      "skills": [
+        "express",
+        "python",
+        "node",
+        "git",
+        "docker",
+        "fastapi",
+        "asp_net",
+        "javascript",
+        "machine_learning",
+        "sql",
+        "jwt",
+        "mongodb",
+        "tensorflow",
+        "dbms",
+        "html",
+        "java",
+        "css",
+        "dsa",
+        "react",
+        "oop",
+        "c_lang"
+      ],
+      "experience": [
+        {
+          "company": "AI Intern Infosys Springboard",
+          "start_year": 2025,
+          "start_month": 12,
+          "start_month_idx": 24312,
+          "end_year": 2026,
+          "end_month": 3,
+          "end_month_idx": 24315,
+          "duration_months": 3,
+          "duration_years": 0
+        },
+        {
+          "company": "Software Developer Intern Eqsoft Business Solutions Pvt Ltd",
+          "start_year": 2025,
+          "start_month": 6,
+          "start_month_idx": 24306,
+          "end_year": 2025,
+          "end_month": 7,
+          "end_month_idx": 24307,
+          "duration_months": 1,
+          "duration_years": 0
+        }
+      ],
+      "education": [
+        {
+          "degree": "B.Tech",
+          "field": "Computer Science And Engineering",
+          "institution": "College of Engineering Thalassery, KeralaCGPA",
+          "year_of_completion": "2026"
+        }
+      ],
+      "roles": [
+        "engineer",
+        "software developer",
+        "developer",
+        "intern"
+      ]
+    }
+  },
+  "R133648": {
+    "resume_id": "R133648",
+    "candidate_id": "C999",
+    "job_id": "J101",
+    "filename": "kartik_resume.txt",
+    "raw_path": "data/api_resumes\\R133648.txt",
+    "clean_path": "data/api_resumes\\R133648_cleaned.txt",
+    "uploaded_at": "2026-07-13T05:07:29.045932Z",
+    "parsed_profile": {
+      "skills": [
+        "cnc",
+        "grinding",
+        "milling"
+      ],
+      "experience": [
+        {
+          "company": "CNC Operator Programmer - Bharat Forge Ltd",
+          "start_year": 2022,
+          "start_month": 1,
+          "start_month_idx": 24265,
+          "end_year": 2026,
+          "end_month": 7,
+          "end_month_idx": 24319,
+          "duration_months": 54,
+          "duration_years": 4
+        }
+      ],
+      "education": [
+        {
+          "degree": "Diploma",
+          "field": "Mechanical Engineering     State",
+          "institution": "State Board of Technical Education",
+          "year_of_completion": "2021"
+        }
+      ],
+      "roles": [
+        "operator",
+        "engineer",
+        "machinist"
+      ]
+    }
+  }
+}

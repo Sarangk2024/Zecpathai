@@ -1,0 +1,16 @@
+{
+  "candidate_id": "resume_die_design_engineer",
+  "final_score": 79.13,
+  "weights_used": {
+    "skills": 0.35,
+    "experience": 0.35,
+    "education": 0.15,
+    "semantic": 0.15
+  },
+  "breakdown": {
+    "skill_score": 88.89,
+    "experience_score": 66.67,
+    "education_score": 90.0,
+    "semantic_score": 74.59
+  }
+}

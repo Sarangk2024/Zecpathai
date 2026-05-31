@@ -1,0 +1,12 @@
+{
+  "candidate_id": "resume_trainee_tool_die",
+  "target_jd": "tool die maker",
+  "is_mismatched_tech": false,
+  "semantic_scores": {
+    "skills_similarity": 0.75,
+    "experience_similarity": 0.0,
+    "project_similarity": 0.6037,
+    "final_similarity_score": 68.42
+  },
+  "match_classification": "Moderate Match"
+}

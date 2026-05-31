@@ -1,0 +1,21 @@
+{
+  "candidate_id": "resume_apprentice_tool_maker",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "ITI",
+        "field": "Not Specified",
+        "institution": "Gujarat Vocational Training Board",
+        "year": 2025,
+        "confidence": 0.9
+      }
+    ],
+    "certifications": [
+      {
+        "name": "Iso",
+        "category": "Quality",
+        "relevance_score": 0.5
+      }
+    ]
+  }
+}

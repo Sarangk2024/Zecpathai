@@ -1,0 +1,13 @@
+{
+  "candidate_file": "resume_die_maintenance_trainee_cleaned.txt",
+  "extracted_experiences": [],
+  "extracted_roles": [
+    "technician"
+  ],
+  "total_experience_years": 0,
+  "total_experience_months": 0,
+  "detected_gaps": [],
+  "detected_overlaps": [],
+  "target_job_role": "technician",
+  "role_relevance_score": 100.0
+}

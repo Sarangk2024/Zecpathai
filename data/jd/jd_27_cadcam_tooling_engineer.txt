@@ -1,0 +1,23 @@
+27. CAD/CAM Tooling Engineer
+
+Job Summary  
+Responsible for creating CAD models and CAM programs for machining tooling 
+components.  
+Key Responsibilities  
+• Develop 3D models and 2D drawings  
+• Generate CNC programs using CAM software  
+• Optimize machining strategies and tool paths  
+• Simulate machining processes  
+• Support CNC machining and troubleshooting  
+• Maintain CAD/CAM documentation  
+Required Skills  
+• CAD/CAM software (NX CAM, Mastercam, PowerMill)  
+• CNC programming knowledge  
+• Understandin g of machining processes  
+• Analytical thinking  
+Qualification  
+• Diploma / B.E / B.Tech in Mechanical  
+Experience  
+• 2–6 years  
+Salary (India)  
+• ₹30,000 – ₹65,000 per month

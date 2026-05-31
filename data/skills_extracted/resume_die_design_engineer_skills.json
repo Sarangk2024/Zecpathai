@@ -1,0 +1,54 @@
+[
+  {
+    "skill": "tooling_components",
+    "confidence": 0.95
+  },
+  {
+    "skill": "gd_t",
+    "confidence": 0.95
+  },
+  {
+    "skill": "strip_layout",
+    "confidence": 0.95
+  },
+  {
+    "skill": "jigs_fixtures",
+    "confidence": 0.95
+  },
+  {
+    "skill": "tolerance_analysis",
+    "confidence": 0.95
+  },
+  {
+    "skill": "solidworks",
+    "confidence": 0.95
+  },
+  {
+    "skill": "autocad",
+    "confidence": 0.85
+  },
+  {
+    "skill": "catia",
+    "confidence": 0.85
+  },
+  {
+    "skill": "welding",
+    "confidence": 0.75
+  },
+  {
+    "skill": "die_assembly",
+    "confidence": 0.75
+  },
+  {
+    "skill": "stamping",
+    "confidence": 0.75
+  },
+  {
+    "skill": "die_design",
+    "confidence": 0.75
+  },
+  {
+    "skill": "clearance",
+    "confidence": 0.75
+  }
+]

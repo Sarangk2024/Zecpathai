@@ -1,0 +1,21 @@
+{
+  "candidate_id": "resume_injection_mold_maker",
+  "filename": "resume_injection_mold_maker_cleaned.txt",
+  "job_title_applied": "mold maker",
+  "is_tech_mismatch": false,
+  "skill_score": 66.67,
+  "experience_score": 33.33,
+  "education_score": 80.0,
+  "semantic_score": 64.48,
+  "final_score": 59.79,
+  "fair_score": 65.36,
+  "masked_profile": {
+    "name": "MASKED",
+    "gender": "MASKED",
+    "location": "MASKED",
+    "email": "MASKED"
+  },
+  "normalized_score": 66.18,
+  "rank": 8,
+  "status": "Review"
+}

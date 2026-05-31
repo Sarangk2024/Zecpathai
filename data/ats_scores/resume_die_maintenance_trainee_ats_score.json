@@ -1,0 +1,16 @@
+{
+  "candidate_id": "resume_die_maintenance_trainee",
+  "final_score": 80.61,
+  "weights_used": {
+    "skills": 0.35,
+    "experience": 0.25,
+    "education": 0.15,
+    "semantic": 0.25
+  },
+  "breakdown": {
+    "skill_score": 80.0,
+    "experience_score": 100.0,
+    "education_score": 50.0,
+    "semantic_score": 80.44
+  }
+}

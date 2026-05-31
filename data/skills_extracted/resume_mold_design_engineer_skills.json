@@ -1,0 +1,50 @@
+[
+  {
+    "skill": "cad_cam",
+    "confidence": 0.95
+  },
+  {
+    "skill": "nx",
+    "confidence": 0.95
+  },
+  {
+    "skill": "moldflow",
+    "confidence": 0.95
+  },
+  {
+    "skill": "shrinkage",
+    "confidence": 0.95
+  },
+  {
+    "skill": "tooling_components",
+    "confidence": 0.95
+  },
+  {
+    "skill": "cooling_design",
+    "confidence": 0.85
+  },
+  {
+    "skill": "mold_design",
+    "confidence": 0.85
+  },
+  {
+    "skill": "gating_design",
+    "confidence": 0.85
+  },
+  {
+    "skill": "hot_runner",
+    "confidence": 0.85
+  },
+  {
+    "skill": "cnc",
+    "confidence": 0.75
+  },
+  {
+    "skill": "autocad",
+    "confidence": 0.75
+  },
+  {
+    "skill": "solidworks",
+    "confidence": 0.75
+  }
+]

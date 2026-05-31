@@ -1,0 +1,22 @@
+{
+  "candidate_id": "resume_trainee_tool_die",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "Diploma",
+        "field": "Not Specified",
+        "institution": "Industrial Training Institute ITI, Delhi",
+        "year": 2025,
+        "confidence": 0.9
+      },
+      {
+        "degree": "ITI",
+        "field": "Not Specified",
+        "institution": "Industrial Training Institute ITI, Delhi",
+        "year": 2025,
+        "confidence": 0.9
+      }
+    ],
+    "certifications": []
+  }
+}

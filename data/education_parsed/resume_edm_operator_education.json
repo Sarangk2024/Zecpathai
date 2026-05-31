@@ -1,0 +1,21 @@
+{
+  "candidate_id": "resume_edm_operator",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "ITI",
+        "field": "Not Specified",
+        "institution": "Tamil Nadu Board of Technical Training",
+        "year": 2022,
+        "confidence": 0.9
+      }
+    ],
+    "certifications": [
+      {
+        "name": "Gdt",
+        "category": "Quality",
+        "relevance_score": 0.5
+      }
+    ]
+  }
+}

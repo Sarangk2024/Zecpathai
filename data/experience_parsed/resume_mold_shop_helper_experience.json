@@ -1,0 +1,16 @@
+{
+  "candidate_file": "resume_mold_shop_helper_cleaned.txt",
+  "extracted_experiences": [],
+  "extracted_roles": [
+    "machinist",
+    "engineer",
+    "cnc machinist",
+    "mold maker"
+  ],
+  "total_experience_years": 0,
+  "total_experience_months": 0,
+  "detected_gaps": [],
+  "detected_overlaps": [],
+  "target_job_role": "cnc machinist",
+  "role_relevance_score": 67.5
+}

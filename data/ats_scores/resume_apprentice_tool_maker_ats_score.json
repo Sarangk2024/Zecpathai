@@ -1,0 +1,16 @@
+{
+  "candidate_id": "resume_apprentice_tool_maker",
+  "final_score": 55.31,
+  "weights_used": {
+    "skills": 0.4,
+    "experience": 0.3,
+    "education": 0.1,
+    "semantic": 0.2
+  },
+  "breakdown": {
+    "skill_score": 50.0,
+    "experience_score": 56.67,
+    "education_score": 50.0,
+    "semantic_score": 66.52
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "candidate_id": "resume_apprentice_tool_maker",
+  "target_jd": "tool maker",
+  "is_mismatched_tech": false,
+  "semantic_scores": {
+    "skills_similarity": 0.6652,
+    "experience_similarity": 0.0,
+    "project_similarity": 0.0,
+    "final_similarity_score": 66.52
+  },
+  "match_classification": "Moderate Match"
+}

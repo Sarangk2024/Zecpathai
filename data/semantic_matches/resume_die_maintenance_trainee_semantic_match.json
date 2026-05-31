@@ -1,0 +1,12 @@
+{
+  "candidate_id": "resume_die_maintenance_trainee",
+  "target_jd": "technician",
+  "is_mismatched_tech": false,
+  "semantic_scores": {
+    "skills_similarity": 0.8044,
+    "experience_similarity": 0.0,
+    "project_similarity": 0.0,
+    "final_similarity_score": 80.44
+  },
+  "match_classification": "Strong Match"
+}

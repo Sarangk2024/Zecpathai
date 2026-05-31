@@ -1,0 +1,12 @@
+{
+  "candidate_id": "FullStack_Developer_Sarang_K_ATS_new (1)",
+  "target_jd": "tool die maker",
+  "is_mismatched_tech": true,
+  "semantic_scores": {
+    "skills_similarity": 0.0,
+    "experience_similarity": 0.0,
+    "project_similarity": 0.4284,
+    "final_similarity_score": 12.85
+  },
+  "match_classification": "Weak Match"
+}

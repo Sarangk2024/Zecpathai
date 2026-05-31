@@ -1,0 +1,26 @@
+{
+  "candidate_id": "sample_resume",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "Diploma",
+        "field": "Machinist Trade Government Industrial Training",
+        "institution": "Government Industrial Training Institute, Pune",
+        "year": 2022,
+        "confidence": 0.9
+      }
+    ],
+    "certifications": [
+      {
+        "name": "CNC Machinist Tool Maker Pune, India amit.kumar@email.com",
+        "category": "Machining",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Interpreted GDT engineering prints for mould cavity milling.",
+        "category": "Quality",
+        "relevance_score": 0.5
+      }
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "candidate_id": "resume_edm_operator",
+  "filename": "resume_edm_operator_cleaned.txt",
+  "job_title_applied": "edm operator",
+  "is_tech_mismatch": false,
+  "skill_score": 50.0,
+  "experience_score": 67.5,
+  "education_score": 50.0,
+  "semantic_score": 56.03,
+  "final_score": 55.88,
+  "fair_score": 53.62,
+  "masked_profile": {
+    "name": "MASKED",
+    "gender": "MASKED",
+    "location": "MASKED",
+    "email": "MASKED"
+  },
+  "normalized_score": 59.83,
+  "rank": 9,
+  "status": "Review"
+}

@@ -1,0 +1,15 @@
+{
+  "candidate_id": "resume_injection_mold_maker",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "Diploma",
+        "field": "Mold Technology Cipet Central",
+        "institution": "CIPET Central Institute of Petrochemicals Engineering Technology",
+        "year": 2020,
+        "confidence": 0.9
+      }
+    ],
+    "certifications": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "candidate_id": "resume_mold_design_engineer",
+  "final_score": 76.39,
+  "weights_used": {
+    "skills": 0.35,
+    "experience": 0.35,
+    "education": 0.15,
+    "semantic": 0.15
+  },
+  "breakdown": {
+    "skill_score": 83.33,
+    "experience_score": 66.67,
+    "education_score": 90.0,
+    "semantic_score": 69.25
+  }
+}

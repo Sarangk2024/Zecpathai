@@ -1,0 +1,31 @@
+{
+  "candidate_id": "resume_cnc_machinist",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "Diploma",
+        "field": "Mechanical Engineering State",
+        "institution": "State Board of Technical Education, Karnataka",
+        "year": 2021,
+        "confidence": 0.9
+      }
+    ],
+    "certifications": [
+      {
+        "name": "Programming: Manual G-CodeM-Code, basic Mastercam layouts.",
+        "category": "CAD_CAM",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Cnc",
+        "category": "Machining",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Gdt",
+        "category": "Quality",
+        "relevance_score": 0.5
+      }
+    ]
+  }
+}

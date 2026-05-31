@@ -1,0 +1,39 @@
+{
+  "candidate_file": "Front_end_Developer_Sarang_K_ATS_new_cleaned.txt",
+  "extracted_experiences": [
+    {
+      "company": "AI Developer Intern Zecser",
+      "start_year": 2026,
+      "start_month": 5,
+      "start_month_idx": 24317,
+      "end_year": 2026,
+      "end_month": 7,
+      "end_month_idx": 24319,
+      "duration_months": 2,
+      "duration_years": 0
+    },
+    {
+      "company": "Software Developer Intern Eqsoft Business Solutions Pvt Ltd",
+      "start_year": 2025,
+      "start_month": 6,
+      "start_month_idx": 24306,
+      "end_year": 2025,
+      "end_month": 7,
+      "end_month_idx": 24307,
+      "duration_months": 1,
+      "duration_years": 0
+    }
+  ],
+  "extracted_roles": [
+    "software developer",
+    "developer",
+    "intern",
+    "engineer"
+  ],
+  "total_experience_years": 0,
+  "total_experience_months": 3,
+  "detected_gaps": [],
+  "detected_overlaps": [],
+  "target_job_role": "unknown",
+  "role_relevance_score": 10.0
+}

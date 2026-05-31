@@ -1,0 +1,16 @@
+{
+  "candidate_id": "resume_progressive_die_maker",
+  "final_score": 69.12,
+  "weights_used": {
+    "skills": 0.35,
+    "experience": 0.25,
+    "education": 0.15,
+    "semantic": 0.25
+  },
+  "breakdown": {
+    "skill_score": 44.44,
+    "experience_score": 100.0,
+    "education_score": 100.0,
+    "semantic_score": 54.26
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "candidate_id": "sample_resume",
+  "target_jd": "cnc machinist",
+  "is_mismatched_tech": false,
+  "semantic_scores": {
+    "skills_similarity": 0.4931,
+    "experience_similarity": 0.0,
+    "project_similarity": 0.0,
+    "final_similarity_score": 27.12
+  },
+  "match_classification": "Weak Match"
+}

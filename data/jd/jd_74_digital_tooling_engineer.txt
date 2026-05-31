@@ -1,0 +1,23 @@
+74. Digital Tooling Engineer
+
+Job Summary  
+Integrates digital technolog ies into tooling design, manufacturing, and maintenance to 
+improve efficiency, traceability, and performance.  
+Key Responsibilities  
+• Implement digital tools for tooling lifecycle management  
+• Integrate CAD/CAM, PLM, and IoT systems  
+• Monitor tool performance using digital dashboards  
+• Improve data visibility and traceability  
+• Support digital transformation initiatives  
+• Collaborate with IT and manufacturing teams  
+Required Skills  
+• CAD/CAM and PLM systems knowledge  
+• Basic IoT and data anal ytics understanding  
+• Tooling and manufacturing process expertise  
+• Problem -solving and digital mindset  
+Qualification  
+• B.E / B.Tech in Mechanical / Mechatronics / Production  
+Experience  
+• 3–7 years  
+Salary (India)  
+• ₹40,000 – ₹90,000 per month

@@ -1,0 +1,26 @@
+[
+  {
+    "skill": "preventive_maintenance",
+    "confidence": 0.95
+  },
+  {
+    "skill": "die_assembly",
+    "confidence": 0.95
+  },
+  {
+    "skill": "tooling_components",
+    "confidence": 0.95
+  },
+  {
+    "skill": "stamping",
+    "confidence": 0.85
+  },
+  {
+    "skill": "fitting",
+    "confidence": 0.75
+  },
+  {
+    "skill": "clearance",
+    "confidence": 0.75
+  }
+]

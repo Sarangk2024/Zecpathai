@@ -1,0 +1,23 @@
+79. Simulation Engineer (Tooling & Die Analysis)
+
+Job Summary  
+Uses simulation software to analyz e tooling performance, material flow, and stress to 
+optimize designs before manufacturing.  
+Key Responsibilities  
+• Perform simulation for dies, molds, and tooling  
+• Analyze stress, strain, and material flow  
+• Optimize tool design and performance  
+• Reduce trial -and-error in production  
+• Generate simulation reports  
+• Support design and development teams  
+Required Skills  
+• Simulation software (ANSYS, Abaqus, AutoForm, Moldflow)  
+• Strong understanding of material behavior  
+• Analytical and problem -solving skil ls  
+• Knowledge of tooling processes  
+Qualification  
+• B.E / B.Tech in Mechanical / Production  
+Experience  
+• 3–7 years  
+Salary (India)  
+• ₹45,000 – ₹1,00,000 per month

@@ -1,0 +1,16 @@
+{
+  "candidate_id": "Front_end_Developer_Sarang_K_ATS_new",
+  "final_score": 19.05,
+  "weights_used": {
+    "skills": 0.35,
+    "experience": 0.25,
+    "education": 0.15,
+    "semantic": 0.25
+  },
+  "breakdown": {
+    "skill_score": 0.0,
+    "experience_score": 10.0,
+    "education_score": 90.0,
+    "semantic_score": 12.18
+  }
+}

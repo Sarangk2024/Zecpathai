@@ -1,0 +1,33 @@
+{
+  "start": "Q1",
+  "nodes": {
+    "Q1": {
+      "question": "Can you introduce yourself?",
+      "next": "Q2",
+      "on_silence": "retry_Q1",
+      "on_confusion": "clarify_Q1"
+    },
+    "retry_Q1": {
+      "question": "Sorry, I didn’t catch that. Could you please introduce yourself?",
+      "next": "Q2",
+      "max_retries": 2
+    },
+    "clarify_Q1": {
+      "question": "You can briefly tell about your background and experience.",
+      "next": "Q1"
+    },
+    "Q2": {
+      "question": "How many years of experience do you have?",
+      "next": "Q3",
+      "on_repeat": "followup_Q2"
+    },
+    "followup_Q2": {
+      "question": "Can you specify the number of years clearly?",
+      "next": "Q3"
+    },
+    "Q3": {
+      "question": "What are your key skills?",
+      "next": "END"
+    }
+  }
+}

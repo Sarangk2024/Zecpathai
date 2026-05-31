@@ -1,0 +1,21 @@
+{
+  "candidate_id": "resume_mold_shop_helper",
+  "filename": "resume_mold_shop_helper_cleaned.txt",
+  "job_title_applied": "cnc machinist",
+  "is_tech_mismatch": false,
+  "skill_score": 33.33,
+  "experience_score": 67.5,
+  "education_score": 50.0,
+  "semantic_score": 52.74,
+  "final_score": 48.16,
+  "fair_score": 44.98,
+  "masked_profile": {
+    "name": "MASKED",
+    "gender": "MASKED",
+    "location": "MASKED",
+    "email": "MASKED"
+  },
+  "normalized_score": 47.29,
+  "rank": 13,
+  "status": "Rejected"
+}

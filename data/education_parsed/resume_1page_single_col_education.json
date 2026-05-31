@@ -1,0 +1,15 @@
+{
+  "candidate_id": "resume_1page_single_col",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "ITI",
+        "field": "Tool Die Maker Trade Government Iti",
+        "institution": "Not Extracted",
+        "year": 2023,
+        "confidence": 0.7
+      }
+    ],
+    "certifications": []
+  }
+}

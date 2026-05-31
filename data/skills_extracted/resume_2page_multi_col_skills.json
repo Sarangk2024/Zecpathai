@@ -1,0 +1,82 @@
+[
+  {
+    "skill": "stamping",
+    "confidence": 0.95
+  },
+  {
+    "skill": "nx",
+    "confidence": 0.95
+  },
+  {
+    "skill": "hot_runner",
+    "confidence": 0.95
+  },
+  {
+    "skill": "solidworks",
+    "confidence": 0.95
+  },
+  {
+    "skill": "gd_t",
+    "confidence": 0.95
+  },
+  {
+    "skill": "moldflow",
+    "confidence": 0.95
+  },
+  {
+    "skill": "tooling_components",
+    "confidence": 0.95
+  },
+  {
+    "skill": "catia",
+    "confidence": 0.85
+  },
+  {
+    "skill": "injection_molding",
+    "confidence": 0.85
+  },
+  {
+    "skill": "cad_cam",
+    "confidence": 0.85
+  },
+  {
+    "skill": "strip_layout",
+    "confidence": 0.85
+  },
+  {
+    "skill": "shrinkage",
+    "confidence": 0.85
+  },
+  {
+    "skill": "autocad",
+    "confidence": 0.75
+  },
+  {
+    "skill": "die_assembly",
+    "confidence": 0.75
+  },
+  {
+    "skill": "jigs_fixtures",
+    "confidence": 0.75
+  },
+  {
+    "skill": "blow_molding",
+    "confidence": 0.75
+  },
+  {
+    "skill": "cooling_design",
+    "confidence": 0.75
+  },
+  {
+    "skill": "mold_design",
+    "confidence": 0.75
+  },
+  {
+    "skill": "cnc",
+    "confidence": 0.75
+  },
+  {
+    "skill": "tolerance_analysis",
+    "confidence": 0.75
+  }
+]

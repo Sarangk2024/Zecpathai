@@ -1,0 +1,46 @@
+[
+  {
+    "skill": "tool_steels",
+    "confidence": 0.95
+  },
+  {
+    "skill": "metrology",
+    "confidence": 0.95
+  },
+  {
+    "skill": "stamping",
+    "confidence": 0.95
+  },
+  {
+    "skill": "tooling_components",
+    "confidence": 0.95
+  },
+  {
+    "skill": "grinding",
+    "confidence": 0.85
+  },
+  {
+    "skill": "cnc",
+    "confidence": 0.85
+  },
+  {
+    "skill": "cmm",
+    "confidence": 0.85
+  },
+  {
+    "skill": "lathe",
+    "confidence": 0.85
+  },
+  {
+    "skill": "die_assembly",
+    "confidence": 0.85
+  },
+  {
+    "skill": "strip_layout",
+    "confidence": 0.75
+  },
+  {
+    "skill": "heat_treatment",
+    "confidence": 0.75
+  }
+]

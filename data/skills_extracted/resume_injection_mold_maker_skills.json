@@ -1,0 +1,46 @@
+[
+  {
+    "skill": "polishing",
+    "confidence": 0.95
+  },
+  {
+    "skill": "die_assembly",
+    "confidence": 0.95
+  },
+  {
+    "skill": "hydraulic_systems",
+    "confidence": 0.95
+  },
+  {
+    "skill": "hot_runner",
+    "confidence": 0.95
+  },
+  {
+    "skill": "grinding",
+    "confidence": 0.85
+  },
+  {
+    "skill": "injection_molding",
+    "confidence": 0.85
+  },
+  {
+    "skill": "cooling_design",
+    "confidence": 0.85
+  },
+  {
+    "skill": "metrology",
+    "confidence": 0.85
+  },
+  {
+    "skill": "venting",
+    "confidence": 0.75
+  },
+  {
+    "skill": "fitting",
+    "confidence": 0.75
+  },
+  {
+    "skill": "tooling_components",
+    "confidence": 0.75
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "introduction": {
+    "description": "Basic candidate introduction and communication assessment",
+    "weight": 10
+  },
+  "education": {
+    "description": "Academic background and qualifications",
+    "weight": 15
+  },
+  "experience": {
+    "description": "Work experience and role relevance",
+    "weight": 20
+  },
+  "skills": {
+    "description": "Technical and non-technical skill evaluation",
+    "weight": 25
+  },
+  "location": {
+    "description": "Candidate location and relocation flexibility",
+    "weight": 10
+  },
+  "salary": {
+    "description": "Salary expectations and negotiation fit",
+    "weight": 10
+  },
+  "notice_period": {
+    "description": "Availability and joining timeline",
+    "weight": 10
+  }
+}

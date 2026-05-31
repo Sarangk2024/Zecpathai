@@ -1,0 +1,21 @@
+{
+  "candidate_id": "resume_1page_single_col",
+  "filename": "resume_1page_single_col_cleaned.txt",
+  "job_title_applied": "tool die maker",
+  "is_tech_mismatch": false,
+  "skill_score": 77.78,
+  "experience_score": 90.0,
+  "education_score": 50.0,
+  "semantic_score": 47.85,
+  "final_score": 69.19,
+  "fair_score": 59.82,
+  "masked_profile": {
+    "name": "MASKED",
+    "gender": "MASKED",
+    "location": "MASKED",
+    "email": "MASKED"
+  },
+  "normalized_score": 81.45,
+  "rank": 6,
+  "status": "Review"
+}

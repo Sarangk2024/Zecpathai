@@ -1,0 +1,14 @@
+[
+  {
+    "skill": "polishing",
+    "confidence": 0.95
+  },
+  {
+    "skill": "cnc",
+    "confidence": 0.95
+  },
+  {
+    "skill": "welding",
+    "confidence": 0.75
+  }
+]

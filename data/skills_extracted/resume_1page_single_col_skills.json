@@ -1,0 +1,34 @@
+[
+  {
+    "skill": "grinding",
+    "confidence": 0.95
+  },
+  {
+    "skill": "milling",
+    "confidence": 0.95
+  },
+  {
+    "skill": "jigs_fixtures",
+    "confidence": 0.95
+  },
+  {
+    "skill": "metrology",
+    "confidence": 0.95
+  },
+  {
+    "skill": "tooling_components",
+    "confidence": 0.95
+  },
+  {
+    "skill": "blueprint_reading",
+    "confidence": 0.85
+  },
+  {
+    "skill": "die_assembly",
+    "confidence": 0.85
+  },
+  {
+    "skill": "lathe",
+    "confidence": 0.75
+  }
+]

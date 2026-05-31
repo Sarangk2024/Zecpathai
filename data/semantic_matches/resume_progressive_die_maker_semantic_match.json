@@ -1,0 +1,12 @@
+{
+  "candidate_id": "resume_progressive_die_maker",
+  "target_jd": "tool die maker",
+  "is_mismatched_tech": false,
+  "semantic_scores": {
+    "skills_similarity": 0.5783,
+    "experience_similarity": 0.4989,
+    "project_similarity": 0.0,
+    "final_similarity_score": 54.26
+  },
+  "match_classification": "Moderate Match"
+}

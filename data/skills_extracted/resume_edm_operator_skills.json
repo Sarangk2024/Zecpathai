@@ -1,0 +1,22 @@
+[
+  {
+    "skill": "edm",
+    "confidence": 0.95
+  },
+  {
+    "skill": "tool_steels",
+    "confidence": 0.95
+  },
+  {
+    "skill": "metrology",
+    "confidence": 0.95
+  },
+  {
+    "skill": "gd_t",
+    "confidence": 0.85
+  },
+  {
+    "skill": "tooling_components",
+    "confidence": 0.85
+  }
+]

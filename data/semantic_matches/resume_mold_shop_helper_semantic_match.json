@@ -1,0 +1,12 @@
+{
+  "candidate_id": "resume_mold_shop_helper",
+  "target_jd": "cnc machinist",
+  "is_mismatched_tech": false,
+  "semantic_scores": {
+    "skills_similarity": 0.5274,
+    "experience_similarity": 0.0,
+    "project_similarity": 0.0,
+    "final_similarity_score": 52.74
+  },
+  "match_classification": "Moderate Match"
+}

@@ -1,0 +1,14 @@
+{
+  "metrics": {
+    "raw_duration_sec": 1.0897,
+    "optimized_duration_sec": 0.0,
+    "improvement_lookup_percent": 100.0,
+    "sequential_duration_sec": 0.0011,
+    "parallel_duration_sec": 0.1064,
+    "improvement_parallel_percent": -9712.3
+  },
+  "noise_cleaning_test": {
+    "input": "Developer!!! with Python..... Django---- and Reactttttt expertise.",
+    "output": "developer with python. django- and react expertise."
+  }
+}

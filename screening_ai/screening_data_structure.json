@@ -1,0 +1,31 @@
+{
+  "candidate_id": "C123",
+  "job_id": "J101",
+  "screening_round": "HR Screening",
+  "responses": [
+    {
+      "question_id": "Q1",
+      "answer": "I am a backend developer...",
+      "intent": "self_introduction",
+      "keywords": ["developer", "backend", "experience"],
+      "confidence_score": 0.94,
+      "clarity_score": 0.88,
+      "relevance_score": 0.90
+    },
+    {
+      "question_id": "Q3",
+      "answer": "Three years experience...",
+      "intent": "experience_info",
+      "keywords": ["3 years", "python"],
+      "confidence_score": 0.91,
+      "clarity_score": 0.85,
+      "relevance_score": 0.92
+    }
+  ],
+  "aggregate_scores": {
+    "communication": 0.86,
+    "confidence": 0.89,
+    "relevance": 0.91
+  },
+  "status": "Completed"
+}

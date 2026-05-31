@@ -1,0 +1,21 @@
+{
+  "candidate_id": "resume_2page_multi_col",
+  "filename": "resume_2page_multi_col_cleaned.txt",
+  "job_title_applied": "mold design engineer",
+  "is_tech_mismatch": false,
+  "skill_score": 100.0,
+  "experience_score": 50.0,
+  "education_score": 90.0,
+  "semantic_score": 74.3,
+  "final_score": 77.14,
+  "fair_score": 84.58,
+  "masked_profile": {
+    "name": "MASKED",
+    "gender": "MASKED",
+    "location": "MASKED",
+    "email": "MASKED"
+  },
+  "normalized_score": 94.36,
+  "rank": 3,
+  "status": "Shortlisted"
+}

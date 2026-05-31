@@ -1,0 +1,18 @@
+[
+  {
+    "skill": "gd_t",
+    "confidence": 0.95
+  },
+  {
+    "skill": "metrology",
+    "confidence": 0.95
+  },
+  {
+    "skill": "cnc",
+    "confidence": 0.95
+  },
+  {
+    "skill": "milling",
+    "confidence": 0.85
+  }
+]

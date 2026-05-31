@@ -1,0 +1,23 @@
+76. AI-Based Tool Design Engineer
+
+Job Summary  
+Uses artificial intelligence and machine learning to optimize tool design, performance, and 
+manufacturing processes.  
+Key Responsibili ties 
+• Develop AI -driven tool design models  
+• Optimize tooling parameters using data analysis  
+• Automate design processes  
+• Analyze historical data for design improvements  
+• Collaborate with data science and engineering teams  
+• Implement predictive design solutions  
+Required Skills  
+• AI/ML fundamentals (Python, data modeling)  
+• CAD and tooling design expertise  
+• Data analysis and algorithm understanding  
+• Problem -solving and innovation  
+Qualification  
+• B.E / B.Tech in Mechanical / AI / Data Science  
+Experience  
+• 3–8 years  
+Salary (India)  
+• ₹50,000 – ₹1,20,000 per month

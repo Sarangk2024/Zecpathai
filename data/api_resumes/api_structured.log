@@ -1,0 +1,234 @@
+{"timestamp": "2026-06-09T04:17:26.923734Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:17:26.940240Z", "service": "ATS Engine", "level": "INFO", "message": "Resume uploaded successfully", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:17:26.941239Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R181578"}
+{"timestamp": "2026-06-09T04:17:27.000663Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-09T04:17:27.002502Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:18:08.174076Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:18:08.174076Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generation requested", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:18:08.176086Z", "service": "ATS Engine", "level": "WARNING", "message": "Shortlist generation failed: No candidates evaluated", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:18:21.642763Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:18:21.659524Z", "service": "ATS Engine", "level": "INFO", "message": "Resume uploaded successfully", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:18:21.659524Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R124371"}
+{"timestamp": "2026-06-09T04:18:21.698666Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-09T04:18:21.698666Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:19:00.917957Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:19:00.919966Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generation requested", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:19:00.919966Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:19:01.022537Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:19:01.024579Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:19:01.098485Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:19:01.102644Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generated successfully", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:19:01.102644Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "  ", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:19:01.102644Z", "service": "ATS Engine", "level": "WARNING", "message": "Upload failed: Missing candidate_id", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:19:01.102644Z", "service": "ATS Engine", "level": "INFO", "message": "Job start requested for resume R124371", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:19:01.104711Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB203006 queued", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:19:01.104711Z", "service": "ATS Engine", "level": "INFO", "message": "Job status check requested for JOB203006"}
+{"timestamp": "2026-06-09T04:19:01.116691Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R124371"}
+{"timestamp": "2026-06-09T04:19:01.142563Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-09T04:19:01.142563Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:19:01.235765Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:19:01.235765Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB203006 processing finished", "candidate_id": "C999"}
+{"timestamp": "2026-06-09T04:20:30.349322Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:20:30.386530Z", "service": "ATS Engine", "level": "INFO", "message": "Resume uploaded successfully", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:20:30.387036Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R130730"}
+{"timestamp": "2026-06-09T04:20:30.482645Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-09T04:20:30.484222Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:21:58.165090Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:21:58.174826Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generation requested", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:21:58.179607Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:21:58.607995Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:21:58.611884Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:21:59.380269Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:21:59.384663Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:21:59.770867Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:21:59.778930Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generated successfully", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:21:59.780950Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "  ", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:21:59.782974Z", "service": "ATS Engine", "level": "WARNING", "message": "Upload failed: Missing candidate_id", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:21:59.785037Z", "service": "ATS Engine", "level": "INFO", "message": "Job start requested for resume R130730", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:21:59.791782Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB279473 queued", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:21:59.794152Z", "service": "ATS Engine", "level": "INFO", "message": "Job status check requested for JOB279473"}
+{"timestamp": "2026-06-09T04:21:59.841355Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R130730"}
+{"timestamp": "2026-06-09T04:21:59.967590Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-09T04:21:59.969606Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:22:00.308710Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:22:00.320975Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB279473 processing finished", "candidate_id": "C999"}
+{"timestamp": "2026-06-09T04:27:10.717531Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:10.741320Z", "service": "ATS Engine", "level": "INFO", "message": "Resume uploaded successfully", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:10.747027Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R183919"}
+{"timestamp": "2026-06-09T04:27:10.824189Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-09T04:27:10.826890Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:27:40.365862Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:27:40.372177Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generation requested", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:40.373307Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:40.432643Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:40.432643Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:40.454792Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:40.458128Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:40.481888Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:40.483003Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:40.508878Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:40.513305Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generated successfully", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:40.513305Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "  ", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:40.513305Z", "service": "ATS Engine", "level": "WARNING", "message": "Upload failed: Missing candidate_id", "job_id": "J101"}
+{"timestamp": "2026-06-09T04:27:40.518339Z", "service": "ATS Engine", "level": "INFO", "message": "Job start requested for resume R183919", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:27:40.520317Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB129905 queued", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:27:40.522961Z", "service": "ATS Engine", "level": "INFO", "message": "Job status check requested for JOB129905"}
+{"timestamp": "2026-06-09T04:27:40.546896Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R183919"}
+{"timestamp": "2026-06-09T04:27:40.593026Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-09T04:27:40.595813Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:27:40.625641Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-09T04:27:40.630149Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB129905 processing finished", "candidate_id": "C999"}
+{"timestamp": "2026-06-09T04:34:40.772618Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C1", "job_id": "J1"}
+{"timestamp": "2026-06-09T04:34:42.784142Z", "service": "ATS Engine", "level": "ERROR", "message": "File save failure: write() argument must be str, not dict", "candidate_id": "C1", "job_id": "J1"}
+{"timestamp": "2026-06-09T04:37:19.623331Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C1", "job_id": "J1"}
+{"timestamp": "2026-06-09T04:37:19.836062Z", "service": "ATS Engine", "level": "ERROR", "message": "File save failure: write() argument must be str, not dict", "candidate_id": "C1", "job_id": "J1"}
+{"timestamp": "2026-06-09T04:37:37.083889Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C1", "job_id": "J1"}
+{"timestamp": "2026-06-09T04:37:37.289564Z", "service": "ATS Engine", "level": "ERROR", "message": "File save failure: write() argument must be str, not dict", "candidate_id": "C1", "job_id": "J1"}
+{"timestamp": "2026-06-09T04:39:18.876757Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C1", "job_id": "J1"}
+{"timestamp": "2026-06-09T04:39:19.510919Z", "service": "ATS Engine", "level": "INFO", "message": "Resume uploaded successfully", "candidate_id": "C1", "job_id": "J1"}
+{"timestamp": "2026-06-09T04:39:41.976169Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R182370"}
+{"timestamp": "2026-06-09T04:39:42.083771Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C1"}
+{"timestamp": "2026-06-09T04:47:19.807734Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C1", "job_id": "tool die maker"}
+{"timestamp": "2026-06-09T04:47:26.790257Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C1", "job_id": "tool die maker"}
+{"timestamp": "2026-06-09T04:48:02.636400Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generation requested", "job_id": "tool die maker"}
+{"timestamp": "2026-06-09T04:48:02.641945Z", "service": "ATS Engine", "level": "WARNING", "message": "Shortlist generation failed: No candidates evaluated", "job_id": "tool die maker"}
+{"timestamp": "2026-06-09T04:49:02.270397Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generation requested", "job_id": "J1"}
+{"timestamp": "2026-06-09T04:49:02.275392Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C1", "job_id": "J1"}
+{"timestamp": "2026-06-09T04:49:02.388401Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C1", "job_id": "J1"}
+{"timestamp": "2026-06-09T04:49:02.392100Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generated successfully", "job_id": "J1"}
+{"timestamp": "2026-06-09T04:50:32.901934Z", "service": "ATS Engine", "level": "INFO", "message": "Job start requested for resume R182370", "job_id": "tool die maker"}
+{"timestamp": "2026-06-09T04:50:32.932200Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB241599 queued", "job_id": "tool die maker"}
+{"timestamp": "2026-06-09T04:51:14.469319Z", "service": "ATS Engine", "level": "INFO", "message": "Job status check requested for JOB241599"}
+{"timestamp": "2026-06-09T04:51:14.472492Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R182370"}
+{"timestamp": "2026-06-09T04:51:14.585219Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C1"}
+{"timestamp": "2026-06-09T04:51:14.585219Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C1", "job_id": "tool die maker"}
+{"timestamp": "2026-06-09T04:51:14.642093Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C1", "job_id": "tool die maker"}
+{"timestamp": "2026-06-09T04:51:14.650075Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB241599 processing finished", "candidate_id": "C1"}
+{"timestamp": "2026-06-22T04:22:47.839578Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:47.869430Z", "service": "ATS Engine", "level": "INFO", "message": "Resume uploaded successfully", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:47.871430Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R317097"}
+{"timestamp": "2026-06-22T04:22:47.937844Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-22T04:22:47.938845Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T04:22:52.003715Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T04:22:52.005938Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generation requested", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.007080Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.040429Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.045429Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.075856Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.077298Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.110755Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.116304Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.146824Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.150153Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.178497Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.185638Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generated successfully", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.189072Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "  ", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.190084Z", "service": "ATS Engine", "level": "WARNING", "message": "Upload failed: Missing candidate_id", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:22:52.192089Z", "service": "ATS Engine", "level": "INFO", "message": "Job start requested for resume R317097", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T04:22:52.232293Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB161551 queued", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T04:22:52.234300Z", "service": "ATS Engine", "level": "INFO", "message": "Job status check requested for JOB161551"}
+{"timestamp": "2026-06-22T04:22:52.250259Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R317097"}
+{"timestamp": "2026-06-22T04:22:52.295085Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-22T04:22:52.296095Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T04:22:52.327591Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T04:22:52.331085Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB161551 processing finished", "candidate_id": "C999"}
+{"timestamp": "2026-06-22T04:27:29.366078Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:29.389786Z", "service": "ATS Engine", "level": "INFO", "message": "Resume uploaded successfully", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:29.391778Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R155611"}
+{"timestamp": "2026-06-22T04:27:29.456384Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-22T04:27:29.460744Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T04:27:32.645380Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T04:27:32.647384Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generation requested", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.648736Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.665842Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.666864Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.683115Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.685112Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.701451Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.703445Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.722382Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.725441Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.740435Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.742434Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.766568Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.769791Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generated successfully", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.771792Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "  ", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.772432Z", "service": "ATS Engine", "level": "WARNING", "message": "Upload failed: Missing candidate_id", "job_id": "J101"}
+{"timestamp": "2026-06-22T04:27:32.775932Z", "service": "ATS Engine", "level": "INFO", "message": "Job start requested for resume R155611", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T04:27:32.794943Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB241697 queued", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T04:27:32.796944Z", "service": "ATS Engine", "level": "INFO", "message": "Job status check requested for JOB241697"}
+{"timestamp": "2026-06-22T04:27:32.810955Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R155611"}
+{"timestamp": "2026-06-22T04:27:32.865405Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-22T04:27:32.868424Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T04:27:32.913223Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T04:27:32.915413Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB241697 processing finished", "candidate_id": "C999"}
+{"timestamp": "2026-06-22T09:24:48.244797Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:48.268940Z", "service": "ATS Engine", "level": "INFO", "message": "Resume uploaded successfully", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:48.270091Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R706883"}
+{"timestamp": "2026-06-22T09:24:48.352453Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-22T09:24:48.354541Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T09:24:51.394197Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T09:24:51.395814Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generation requested", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.397134Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.416051Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.418101Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.478910Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.485762Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.521016Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.522018Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.556855Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.558364Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.678820Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.682831Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.767331Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.770866Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.824487Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.827485Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generated successfully", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.839438Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "  ", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.841624Z", "service": "ATS Engine", "level": "WARNING", "message": "Upload failed: Missing candidate_id", "job_id": "J101"}
+{"timestamp": "2026-06-22T09:24:51.845723Z", "service": "ATS Engine", "level": "INFO", "message": "Job start requested for resume R706883", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T09:24:51.864499Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB329214 queued", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T09:24:51.873847Z", "service": "ATS Engine", "level": "INFO", "message": "Job status check requested for JOB329214"}
+{"timestamp": "2026-06-22T09:24:51.894603Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R706883"}
+{"timestamp": "2026-06-22T09:24:51.923915Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-06-22T09:24:51.925162Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T09:24:52.028901Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-06-22T09:24:52.036417Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB329214 processing finished", "candidate_id": "C999"}
+{"timestamp": "2026-06-22T09:25:37.470646Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C10", "job_id": "J10"}
+{"timestamp": "2026-06-22T09:25:38.443113Z", "service": "ATS Engine", "level": "INFO", "message": "Resume uploaded successfully", "candidate_id": "C10", "job_id": "J10"}
+{"timestamp": "2026-06-22T09:26:14.378186Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R861201"}
+{"timestamp": "2026-06-22T09:26:14.520187Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C10"}
+{"timestamp": "2026-07-13T05:07:29.023134Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:29.048163Z", "service": "ATS Engine", "level": "INFO", "message": "Resume uploaded successfully", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:29.048163Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R133648"}
+{"timestamp": "2026-07-13T05:07:29.097742Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-07-13T05:07:29.098832Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-07-13T05:07:31.403676Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-07-13T05:07:31.404675Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generation requested", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.404675Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.421358Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.422357Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.436765Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.437896Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.451801Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.453312Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.470219Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.470219Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.488539Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.488539Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.506332Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.507347Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.523292Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.523292Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.538746Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.540743Z", "service": "ATS Engine", "level": "INFO", "message": "Shortlist generated successfully", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.541743Z", "service": "ATS Engine", "level": "INFO", "message": "Initiated resume upload", "candidate_id": "  ", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.541743Z", "service": "ATS Engine", "level": "WARNING", "message": "Upload failed: Missing candidate_id", "job_id": "J101"}
+{"timestamp": "2026-07-13T05:07:31.541743Z", "service": "ATS Engine", "level": "INFO", "message": "Job start requested for resume R133648", "job_id": "cnc machinist"}
+{"timestamp": "2026-07-13T05:07:31.558047Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB134044 queued", "job_id": "cnc machinist"}
+{"timestamp": "2026-07-13T05:07:31.559041Z", "service": "ATS Engine", "level": "INFO", "message": "Job status check requested for JOB134044"}
+{"timestamp": "2026-07-13T05:07:31.571600Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing request for resume R133648"}
+{"timestamp": "2026-07-13T05:07:31.594682Z", "service": "ATS Engine", "level": "INFO", "message": "Parsing completed successfully", "candidate_id": "C999"}
+{"timestamp": "2026-07-13T05:07:31.595683Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring requested", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-07-13T05:07:31.625095Z", "service": "ATS Engine", "level": "INFO", "message": "Candidate scoring completed", "candidate_id": "C999", "job_id": "cnc machinist"}
+{"timestamp": "2026-07-13T05:07:31.626098Z", "service": "ATS Engine", "level": "INFO", "message": "Job JOB134044 processing finished", "candidate_id": "C999"}

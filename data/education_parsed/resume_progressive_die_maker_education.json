@@ -1,0 +1,15 @@
+{
+  "candidate_id": "resume_progressive_die_maker",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "Diploma",
+        "field": "Not Specified",
+        "institution": "Not Extracted",
+        "year": 2018,
+        "confidence": 0.7
+      }
+    ],
+    "certifications": []
+  }
+}

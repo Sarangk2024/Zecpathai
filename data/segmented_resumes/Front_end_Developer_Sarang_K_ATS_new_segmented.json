@@ -1,0 +1,45 @@
+{
+  "other": [
+    "Sarang K",
+    "Kannur, Kerala 91 8078738602 sarangsajeevan629@gmail.com",
+    "linkedin.cominsarangk2003 github.comSarangk2024 Portfolio"
+  ],
+  "summary": [
+    "Frontend-focused Computer Science engineer with hands-on experience building responsive, component-based web applications using React, JavaScript ES6, HTML5, and CSS3. Delivered production-deployed UIs across two internships and multiple independently scoped projects, integrating RESTful APIs and focusing on performance, cross-browser compatibility, and clean UIUX. Comfortable with the full frontend development lifecycle - from wireframe to deployment - using modern tooling including Git, Docker, and CICD pipelines. Targeting entry-level Frontend Developer roles where UI quality and user experience matter."
+  ],
+  "skills": [
+    "Frontend Core:HTML5, CSS3, JavaScript ES6, ThreeJs",
+    "Frameworks Libraries:React, React Hooks, React Router, Context API, Bootstrap, Tailwind CSS",
+    "UI Styling:Responsive Design, Flexbox, CSS Grid, Cross-browser Compatibility, Web Accessibility",
+    "API Integration:RESTful API Consumption, Axios, Fetch API, JSON, JWT-based Auth Flows",
+    "Tools DevOps:Git, GitHub, Docker, CICD Pipelines, Vercel, Render",
+    "Backend:Node.js, Express.js, FastAPI, Python",
+    "Practices:Component-based Architecture, AgileScrum, OOP, SDLC, Debugging, Postman"
+  ],
+  "experience": [
+    "AI Developer Intern Zecser May 2026 - Present",
+    "- DevelopingZecPath AI, an AI-powered recruitment and HR automation platform focused on resume parsing, candidate screening, and intelligent skill extraction",
+    "- Built NLP-based pipelines for extracting skills, education, and experience data from resumes using Python and machine learning techniques",
+    "- Worked on synchronous and asynchronous AI workflows for scalable resume processing and automated candidate evaluation",
+    "Software Developer Intern Eqsoft Business Solutions Pvt LtdJun 2025 - Jul 2025",
+    "- Developed and integrated12RESTful API endpoints with frontend workflows using ASP.NET MVC designed and validated UI data flows against a normalized MySQL backend, ensuring consistent user-facing functionality",
+    "- Implemented JWT-based authentication flows and RBAC-gated UI route protection resolved cross-browser rendering issues and improved page response consistency"
+  ],
+  "projects": [
+    "AgriDetect AIReact, FastAPI, EfficientNet, Docker, CICDLive Demo",
+    "- Designed and built a fully responsive React frontend for a crop disease detection web app implemented reusable component architecture, image upload UI, and real-time prediction result display achieving92 model accuracy",
+    "- Integrated8 FastAPI endpointsvia Axios with JWT-secured access deployed frontend via CICD pipeline to Vercel with sub300ms average response time",
+    "Blockchain Product Verification SystemReact, Node.js, Express.js, MongoDB, Web3.jsLive Demo",
+    "- Built a React-based frontend for blockchain product authentication, implementing multi-step form flows, dynamic product status displays, and Web3.js wallet interaction components for Ethereum Sepolia testnet transactions",
+    "- Applied responsive design principles across all views consumed10 RESTful API endpointsusing Fetch API with full error handling and loading state management",
+    "Smart Helmet Accident Alert SystemJavaScript, PHP , MySQL, IoT",
+    "- Developed a real-time dashboard UI to visualize live accelerometer and GPS sensor data from IoT devices, displaying collision alerts within500msof event detection with auto-refreshing status components"
+  ],
+  "education": [
+    "B.Tech in Computer Science and Engineering",
+    "College of Engineering Thalassery, Kerala"
+  ],
+  "certifications": [
+    "Infosys AI Virtual Internship Certificate, IBM Full Stack Software Developer Professional Certificate, UPCode AI Bootcamp Certificate"
+  ]
+}

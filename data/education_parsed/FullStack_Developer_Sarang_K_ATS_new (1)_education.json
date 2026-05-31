@@ -1,0 +1,26 @@
+{
+  "candidate_id": "FullStack_Developer_Sarang_K_ATS_new (1)",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "B.Tech",
+        "field": "Computer Science And Engineering",
+        "institution": "College of Engineering Thalassery, KeralaCGPA",
+        "year": 2026,
+        "confidence": 0.9
+      }
+    ],
+    "certifications": [
+      {
+        "name": "Python",
+        "category": "Programming",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Machine Learning",
+        "category": "AI",
+        "relevance_score": 0.5
+      }
+    ]
+  }
+}

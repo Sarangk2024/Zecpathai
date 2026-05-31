@@ -1,0 +1,16 @@
+{
+  "candidate_id": "resume_1page_single_col",
+  "final_score": 69.19,
+  "weights_used": {
+    "skills": 0.35,
+    "experience": 0.25,
+    "education": 0.15,
+    "semantic": 0.25
+  },
+  "breakdown": {
+    "skill_score": 77.78,
+    "experience_score": 90.0,
+    "education_score": 50.0,
+    "semantic_score": 47.85
+  }
+}

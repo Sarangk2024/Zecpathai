@@ -1,0 +1,16 @@
+{
+  "candidate_id": "resume_edm_operator",
+  "final_score": 55.88,
+  "weights_used": {
+    "skills": 0.35,
+    "experience": 0.25,
+    "education": 0.15,
+    "semantic": 0.25
+  },
+  "breakdown": {
+    "skill_score": 50.0,
+    "experience_score": 67.5,
+    "education_score": 50.0,
+    "semantic_score": 56.03
+  }
+}

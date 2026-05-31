@@ -1,0 +1,14 @@
+{
+  "logical_reasoning": [
+    "If a project deadline is approaching and tasks are incomplete, how would you prioritize your work?",
+    "How would you debug a system that suddenly stops working?"
+  ],
+  "situational_judgment": [
+    "You disagree with your manager’s decision. What would you do?",
+    "A teammate is underperforming. How would you handle the situation?"
+  ],
+  "analytical_thinking": [
+    "How would you approach solving a complex technical problem?",
+    "Explain your process for learning a new technology quickly."
+  ]
+}

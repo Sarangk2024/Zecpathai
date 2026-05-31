@@ -1,0 +1,26 @@
+{
+  "candidate_id": "resume_mold_design_engineer",
+  "academic_profile": {
+    "education": [
+      {
+        "degree": "B.Tech",
+        "field": "Plastics Technology Cipet",
+        "institution": "Not Extracted",
+        "year": 2020,
+        "confidence": 0.7
+      }
+    ],
+    "certifications": [
+      {
+        "name": "CAD systems: Siemens NX, SolidWorks, AutoCAD.",
+        "category": "CAD_CAM",
+        "relevance_score": 0.5
+      },
+      {
+        "name": "Cnc",
+        "category": "Machining",
+        "relevance_score": 0.5
+      }
+    ]
+  }
+}

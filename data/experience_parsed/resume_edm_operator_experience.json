@@ -1,0 +1,28 @@
+{
+  "candidate_file": "resume_edm_operator_cleaned.txt",
+  "extracted_experiences": [
+    {
+      "company": "EDM Machinist - Kovai Tool Room Engineering",
+      "start_year": 2023,
+      "start_month": 1,
+      "start_month_idx": 24277,
+      "end_year": 2026,
+      "end_month": 7,
+      "end_month_idx": 24319,
+      "duration_months": 42,
+      "duration_years": 3
+    }
+  ],
+  "extracted_roles": [
+    "edm operator",
+    "machinist",
+    "operator",
+    "engineer"
+  ],
+  "total_experience_years": 3,
+  "total_experience_months": 42,
+  "detected_gaps": [],
+  "detected_overlaps": [],
+  "target_job_role": "edm operator",
+  "role_relevance_score": 67.5
+}
