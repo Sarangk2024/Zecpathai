@@ -1,0 +1,80 @@
+{
+  "job_description": {
+    "job_id": "J101",
+    "role": "Backend Developer",
+    "skills_required": ["Python", "Django", "REST API", "SQL"],
+    "experience_required": "2-5 years",
+    "education": "B.Tech / B.E in CS or related"
+  },
+  "candidates": [
+    {
+      "candidate_id": "C001",
+      "name": "Arjun Nair",
+      "level": "Strong",
+      "profile": {
+        "skills": ["Python", "Django", "REST API", "PostgreSQL"],
+        "experience": 3,
+        "projects": ["E-commerce backend", "Payment API"],
+        "education": "B.Tech Computer Science"
+      },
+      "simulated_outputs": {
+        "ats_score": 85,
+        "screening_score": 80,
+        "screening_summary": "Clear and relevant answers",
+        "hr_score": 85,
+        "communication": "Strong",
+        "confidence": "High",
+        "technical_score": 88,
+        "machine_test_score": 85,
+        "behavior_risk": "Low Risk",
+        "integrity_risk": "Low Risk"
+      }
+    },
+    {
+      "candidate_id": "C002",
+      "name": "Rahul Kumar",
+      "level": "Average",
+      "profile": {
+        "skills": ["Python", "Flask"],
+        "experience": 2,
+        "projects": ["Blog API"],
+        "education": "B.Sc Computer Science"
+      },
+      "simulated_outputs": {
+        "ats_score": 65,
+        "screening_score": 68,
+        "screening_summary": "Basic understanding",
+        "hr_score": 70,
+        "communication": "Moderate",
+        "confidence": "Medium",
+        "technical_score": 70,
+        "machine_test_score": 65,
+        "behavior_risk": "Moderate Risk",
+        "integrity_risk": "Low Risk"
+      }
+    },
+    {
+      "candidate_id": "C003",
+      "name": "Ankit Sharma",
+      "level": "Weak",
+      "profile": {
+        "skills": ["HTML", "CSS"],
+        "experience": 0,
+        "projects": [],
+        "education": "Diploma"
+      },
+      "simulated_outputs": {
+        "ats_score": 40,
+        "screening_score": 50,
+        "screening_summary": "Incomplete responses",
+        "hr_score": 55,
+        "communication": "Weak",
+        "confidence": "Low",
+        "technical_score": 45,
+        "machine_test_score": 40,
+        "behavior_risk": "High Risk",
+        "integrity_risk": "Moderate Risk"
+      }
+    }
+  ]
+}
