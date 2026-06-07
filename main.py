@@ -5,45 +5,84 @@ import os
 import webbrowser
 import threading
 import time
-from fastapi import FastAPI
+import re
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 import uvicorn
 
-# Import core scoring logic directly
-from ai_core.release_ready_system import release_pipeline
-
-app = FastAPI(title="Zecpath AI Hiring Portal")
+app = FastAPI(title="Zecpath AI - Autonomous Hiring Job Portal")
 
 # Active log logs container
 observability_logs = []
 
-class CandidateSimulationPayload(BaseModel):
-    candidate_id: str
-    name: str
-    ats_score: float
-    screening_score: float
-    hr_score: float
-    technical_score: float
-    machine_test_score: float
-    behavior_risk: str
-    integrity_risk: str
+# Mock Job Configurations
+JOB_ROLES = {
+    "mern": {
+        "title": "MERN Stack Developer",
+        "skills": ["react", "node.js", "express", "mongodb", "javascript"],
+        "budget_min": 80000,
+        "budget_max": 120000,
+        "assessment_type": "coding",
+        "instructions": "Implement a JavaScript function to reverse a string. Example: reverse('hello') -> 'olleh'."
+    },
+    "sales": {
+        "title": "Sales Executive",
+        "skills": ["communication", "negotiation", "crm", "leads", "sales"],
+        "budget_min": 50000,
+        "budget_max": 75000,
+        "assessment_type": "aptitude",
+        "question": "Which strategy is best for handling a customer objection about price?",
+        "options": [
+            "A. Suggest discount instantly to close sales.",
+            "B. Re-emphasize value and ROI matching business outcomes.",
+            "C. Explain that pricing is fixed and cannot be changed.",
+            "D. Recommend competitor alternatives."
+        ],
+        "correct": "B"
+    },
+    "uiux": {
+        "title": "UI/UX Designer",
+        "skills": ["figma", "wireframe", "prototype", "photoshop", "design"],
+        "budget_min": 70000,
+        "budget_max": 95000,
+        "assessment_type": "design_quiz",
+        "question": "What does usability heuristics rule 'Consistency and Standards' refer to?",
+        "options": [
+            "A. Using unique layouts on every page.",
+            "B. Maintaining uniform platform controls and patterns.",
+            "C. Selecting bright primary colors.",
+            "D. Ensuring high security authentication."
+        ],
+        "correct": "B"
+    }
+}
 
-# HTML frontend code
+class AssessmentPayload(BaseModel):
+    role_key: str
+    code_content: str = ""
+    aptitude_answer: str = ""
+
+class NegotiationPayload(BaseModel):
+    role_key: str
+    expected_salary: float
+    counter_offer_count: int
+
+# HTML layout definition
 INDEX_HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zecpath AI - Autonomous Hiring Portal</title>
+    <title>Zecpath AI - Autonomous Job Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #070a13;
-            --bg-panel: #0d1222;
-            --bg-card: rgba(20, 27, 49, 0.6);
-            --border-glow: rgba(99, 102, 241, 0.15);
+            --bg-base: #060913;
+            --bg-panel: #0b0f1e;
+            --bg-card: rgba(17, 24, 43, 0.75);
+            --border-glow: rgba(99, 102, 241, 0.2);
             --color-primary: #6366f1;
             --color-primary-glow: rgba(99, 102, 241, 0.4);
             --color-success: #10b981;
@@ -74,8 +113,8 @@ INDEX_HTML = """
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.5rem 3rem;
-            background-color: rgba(13, 18, 34, 0.8);
+            padding: 1.25rem 3rem;
+            background-color: rgba(11, 15, 30, 0.85);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             position: sticky;
@@ -84,7 +123,7 @@ INDEX_HTML = """
         }
 
         .logo {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 700;
             background: linear-gradient(135deg, #818cf8, #c084fc);
             -webkit-background-clip: text;
@@ -131,13 +170,8 @@ INDEX_HTML = """
             box-shadow: 0 0 10px var(--border-glow);
         }
 
-        .tab-btn:hover:not(.active) {
-            color: var(--text-main);
-            background-color: rgba(255, 255, 255, 0.03);
-        }
-
         .main-container {
-            max-width: 1400px;
+            max-width: 1300px;
             margin: 2rem auto;
             padding: 0 2rem;
         }
@@ -150,14 +184,14 @@ INDEX_HTML = """
             display: block;
         }
 
-        /* Dashboard & Stepper Styles */
-        .dashboard-layout {
+        /* Layout Grid */
+        .portal-grid {
             display: grid;
-            grid-template-columns: 350px 1fr;
+            grid-template-columns: 380px 1fr;
             gap: 2rem;
         }
 
-        .control-panel {
+        .card-panel {
             background-color: var(--bg-panel);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 12px;
@@ -179,41 +213,74 @@ INDEX_HTML = """
         }
 
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
         }
 
         .form-group label {
             display: block;
             font-size: 0.8rem;
             color: var(--text-muted);
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.4rem;
             font-weight: 500;
         }
 
-        .form-select, .form-input {
+        .form-select, .form-input, .form-textarea {
             width: 100%;
             background-color: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #fff;
-            padding: 0.6rem 0.8rem;
+            padding: 0.65rem 0.85rem;
             border-radius: 6px;
             outline: none;
             font-size: 0.9rem;
+            font-family: inherit;
             transition: all 0.2s ease;
         }
 
-        .form-select:focus, .form-input:focus {
+        .form-textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        .form-select:focus, .form-input:focus, .form-textarea:focus {
             border-color: var(--color-primary);
             box-shadow: 0 0 8px var(--border-glow);
         }
 
-        .scores-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
+        .file-upload-wrapper {
+            position: relative;
+            border: 2px dashed rgba(255,255,255,0.1);
+            padding: 1.5rem;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.01);
+            transition: all 0.2s ease;
         }
 
-        .run-btn {
+        .file-upload-wrapper:hover {
+            border-color: var(--color-primary);
+            background: rgba(99, 102, 241, 0.02);
+        }
+
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-name-label {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--color-success);
+            display: none;
+        }
+
+        .btn-action {
             width: 100%;
             background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
             border: none;
@@ -222,149 +289,114 @@ INDEX_HTML = """
             font-weight: 600;
             border-radius: 6px;
             cursor: pointer;
-            margin-top: 1.25rem;
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
             transition: all 0.2s ease;
         }
 
-        .run-btn:hover {
-            transform: translateY(-2px);
+        .btn-action:hover {
+            transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
         }
 
-        .simulation-area {
+        /* Steps Stepper Panel */
+        .workspace-area {
             display: flex;
             flex-direction: column;
             gap: 2rem;
         }
 
-        /* Stepper Pipeline */
-        .stepper-container {
-            background-color: var(--bg-panel);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .stepper {
+        .stepper-row {
             display: flex;
             justify-content: space-between;
             position: relative;
-            margin: 1.5rem 0;
-        }
-
-        .stepper::before {
-            content: '';
-            position: absolute;
-            top: 18px;
-            left: 20px;
-            right: 20px;
-            height: 2px;
-            background-color: rgba(255, 255, 255, 0.05);
-            z-index: 1;
-        }
-
-        .step-progress-bar {
-            position: absolute;
-            top: 18px;
-            left: 20px;
-            height: 2px;
-            width: 0%;
-            background: linear-gradient(90deg, var(--color-primary), var(--color-success));
-            z-index: 1;
-            transition: width 0.4s ease;
+            background-color: var(--bg-panel);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .step {
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 90px;
             position: relative;
             z-index: 2;
-            width: 80px;
         }
 
-        .step-circle {
-            width: 36px;
-            height: 36px;
+        .step-num {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background-color: #111827;
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            background-color: #0b0f1e;
+            border: 2px solid rgba(255,255,255,0.1);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-muted);
             transition: all 0.3s ease;
         }
 
-        .step-title {
-            font-size: 0.7rem;
-            font-weight: 500;
-            margin-top: 0.5rem;
+        .step-label {
+            font-size: 0.65rem;
             color: var(--text-muted);
+            margin-top: 0.4rem;
             text-align: center;
-            white-space: nowrap;
         }
 
-        .step.active .step-circle {
+        .step.active .step-num {
             border-color: var(--color-primary);
             color: #fff;
-            box-shadow: 0 0 12px var(--color-primary-glow);
-            background-color: var(--bg-base);
-            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 10px var(--color-primary-glow);
+            animation: pulse-step 1.5s infinite;
         }
 
-        .step.active .step-title {
+        .step.active .step-label {
             color: #fff;
             font-weight: 600;
         }
 
-        .step.completed .step-circle {
+        .step.completed .step-num {
             border-color: var(--color-success);
             background-color: rgba(16, 185, 129, 0.1);
             color: var(--color-success);
         }
 
-        .step.completed .step-title {
+        .step.completed .step-label {
             color: var(--color-success);
         }
 
-        @keyframes pulse {
+        @keyframes pulse-step {
             0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
-            70% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+            70% { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0); }
             100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
         }
 
-        /* Results Panel */
-        .results-panel {
+        /* Ingest Workspace Panels */
+        .workspace-panel {
             background-color: var(--bg-panel);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 12px;
-            padding: 1.5rem;
+            padding: 2rem;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             display: none;
         }
 
-        .results-grid {
+        .workspace-panel.active {
+            display: block;
+        }
+
+        /* ATS Dashboard */
+        .ats-results {
             display: grid;
-            grid-template-columns: 200px 1fr;
+            grid-template-columns: 180px 1fr;
             gap: 2rem;
-            margin-top: 1rem;
         }
 
-        .gauge-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            padding-right: 2rem;
-        }
-
-        .score-circle {
+        .circle-gauge {
             width: 140px;
             height: 140px;
             border-radius: 50%;
@@ -374,485 +406,421 @@ INDEX_HTML = """
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            position: relative;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
         }
 
-        .score-val {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: #fff;
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
         }
 
-        .score-label {
+        .skill-badge {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
             font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 0.15rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
         }
 
-        .decision-badge {
+        /* Voice Call Interface */
+        .call-card {
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.2);
+            padding: 1.5rem;
             margin-top: 1rem;
-            padding: 0.35rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
         }
 
-        .badge-selected {
-            background-color: rgba(16, 185, 129, 0.15);
-            border: 1px solid var(--color-success);
-            color: var(--color-success);
-        }
-
-        .badge-hold {
-            background-color: rgba(245, 158, 11, 0.15);
-            border: 1px solid var(--color-warning);
-            color: var(--color-warning);
-        }
-
-        .badge-rejected {
-            background-color: rgba(239, 68, 68, 0.15);
-            border: 1px solid var(--color-danger);
-            color: var(--color-danger);
-        }
-
-        .report-details {
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-        }
-
-        .card-metrics {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 0.75rem;
-        }
-
-        .metric-card {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 0.75rem;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .metric-card-title {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 0.25rem;
-        }
-
-        .metric-card-val {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .strengths-weaknesses {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .sw-box {
-            padding: 1rem;
-            border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.01);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .sw-box h4 {
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-
-        .sw-box.strengths h4 { color: var(--color-success); }
-        .sw-box.weaknesses h4 { color: var(--color-warning); }
-
-        .sw-list {
-            list-style: none;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-        }
-
-        .sw-list li::before {
-            content: '•';
-            margin-right: 0.35rem;
-        }
-
-        .sw-box.strengths li::before { color: var(--color-success); }
-        .sw-box.weaknesses li::before { color: var(--color-warning); }
-
-        /* Logger console */
-        .console-panel {
-            background-color: #070911;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 1.25rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .console-header {
+        .call-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             padding-bottom: 0.5rem;
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
         }
 
-        .console-title {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        .voice-wave {
             display: flex;
+            gap: 3px;
             align-items: center;
-            gap: 0.5rem;
+            height: 20px;
         }
 
-        .console-title::before {
-            content: '';
-            width: 8px;
-            height: 8px;
+        .voice-bar {
+            width: 3px;
+            height: 10px;
             background-color: var(--color-success);
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 6px var(--color-success);
+            border-radius: 3px;
+            animation: bounce-bar 0.8s infinite ease-in-out alternate;
         }
 
-        .console-body {
-            height: 180px;
+        .voice-bar:nth-child(2) { animation-delay: 0.2s; height: 16px; }
+        .voice-bar:nth-child(3) { animation-delay: 0.4s; height: 12px; }
+        .voice-bar:nth-child(4) { animation-delay: 0.1s; height: 18px; }
+
+        @keyframes bounce-bar {
+            0% { transform: scaleY(0.4); }
+            100% { transform: scaleY(1.2); }
+        }
+
+        .dialogue-stream {
+            height: 200px;
             overflow-y: auto;
+            padding: 1rem;
+            background-color: #070911;
+            border-radius: 6px;
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
-            font-size: 0.8rem;
-            color: #a78bfa;
-            scroll-behavior: smooth;
+            gap: 0.75rem;
         }
 
-        .log-row {
+        .bubble {
+            max-width: 80%;
+            padding: 0.6rem 0.85rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
             line-height: 1.4;
         }
 
-        .log-time {
-            color: #5b21b6;
-            margin-right: 0.5rem;
+        .bubble.ai {
+            background-color: rgba(255,255,255,0.05);
+            color: var(--text-main);
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
         }
 
-        .log-info { color: #818cf8; }
-        .log-success { color: var(--color-success); }
-        .log-warn { color: var(--color-warning); }
+        .bubble.user {
+            background-color: var(--color-primary);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
 
-        /* Tab 2: Observability Dashboard */
-        .metrics-overview {
+        /* Coding Sandbox Editor */
+        .editor-container {
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 1rem;
+            background-color: #070a13;
+        }
+
+        .editor-header {
+            background: #0f172a;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .editor-textarea {
+            width: 100%;
+            height: 150px;
+            background: transparent;
+            border: none;
+            color: #a78bfa;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 1rem;
+            outline: none;
+            font-size: 0.85rem;
+            resize: none;
+        }
+
+        .editor-terminal {
+            background: #000;
+            padding: 0.75rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: #10b981;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            min-height: 40px;
+        }
+
+        /* Offer Letter display */
+        .offer-letter-doc {
+            background-color: #fff;
+            color: #111827;
+            padding: 3rem;
+            border-radius: 8px;
+            font-family: 'Georgia', serif;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .offer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #6366f1;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .offer-body {
+            font-size: 0.9rem;
+        }
+
+        .offer-body p {
+            margin-bottom: 1.25rem;
+        }
+
+        .signature-box {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        /* Recruiter Tab dashboard cards */
+        .rec-metrics {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
-        .metric-hero {
+        .rec-metric-card {
             background-color: var(--bg-panel);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255,255,255,0.05);
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             text-align: center;
         }
 
-        .metric-hero-val {
-            font-size: 2.5rem;
+        .rec-metric-val {
+            font-size: 2.2rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #fff, var(--text-muted));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 0.5rem 0;
-        }
-
-        .metric-hero-title {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .alerts-panel {
-            background-color: var(--bg-panel);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .alert-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(239, 68, 68, 0.08);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 1rem;
-            border-radius: 8px;
-            color: #fca5a5;
-            font-size: 0.9rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .alert-item::before {
-            content: '⚠';
-            margin-right: 0.5rem;
-            font-size: 1.1rem;
-        }
-
-        /* Tab 3: Handbook markdown */
-        .handbook-panel {
-            background-color: var(--bg-panel);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 2.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            line-height: 1.6;
-        }
-
-        .handbook-panel h2 {
-            font-size: 1.5rem;
             color: #fff;
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 0.35rem;
+            margin: 0.25rem 0;
         }
 
-        .handbook-panel p {
-            margin-bottom: 1rem;
-            color: var(--text-muted);
-            font-size: 0.95rem;
+        .pipeline-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
         }
 
-        .handbook-panel code {
-            font-family: 'JetBrains Mono', monospace;
-            background-color: rgba(255, 255, 255, 0.04);
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
+        .pipeline-table th, .pipeline-table td {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             font-size: 0.85rem;
-            color: #f472b6;
         }
 
-        .handbook-panel pre {
-            background-color: #070911;
-            padding: 1rem;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin-bottom: 1.25rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .handbook-panel pre code {
-            background-color: transparent;
-            padding: 0;
-            color: #a78bfa;
+        .pipeline-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            background-color: rgba(255,255,255,0.01);
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">ZECPATH AI</div>
+        <div class="logo">ZECPATH AI PORTAL</div>
         <div class="nav-tabs">
-            <button class="tab-btn active" onclick="switchTab('simulation')">Pipeline Simulator</button>
-            <button class="tab-btn" onclick="switchTab('observability')">Observability Center</button>
-            <button class="tab-btn" onclick="switchTab('handbook')">Developer Manual</button>
+            <button class="tab-btn active" id="tab-apply" onclick="switchTab('apply')">Apply Job</button>
+            <button class="tab-btn" id="tab-recruiter" onclick="switchTab('recruiter')">Recruiter Console</button>
         </div>
     </header>
 
     <main class="main-container">
-        <!-- TAB 1: PIPELINE RUNNER -->
-        <div id="simulation" class="tab-content active">
-            <div class="dashboard-layout">
-                <!-- Side Panel Control -->
-                <aside class="control-panel">
+        <!-- TAB 1: JOB PORTAL APPLICANT -->
+        <div id="apply-tab" class="tab-content active">
+            <div class="portal-grid">
+                <!-- Left panel: Application Form -->
+                <aside class="card-panel">
                     <div class="section-title">
-                        <span>Simulate Candidate</span>
+                        <span>Candidate Application</span>
                     </div>
                     
                     <div class="form-group">
-                        <label for="profile-select">Predefined Profiles</label>
-                        <select id="profile-select" class="form-select" onchange="loadPresetProfile()">
-                            <option value="custom">Custom Input Candidate</option>
-                            <option value="c001">Arjun Nair (Strong Candidate)</option>
-                            <option value="c002">Rahul Kumar (Average Candidate)</option>
-                            <option value="c003">Ankit Sharma (Weak Candidate)</option>
+                        <label for="job-select">Select Job Role</label>
+                        <select id="job-select" class="form-select" onchange="loadJobRequirement()">
+                            <option value="mern">MERN Stack Developer (Technical)</option>
+                            <option value="sales">Sales Executive (Non-Technical)</option>
+                            <option value="uiux">UI/UX Designer (Creative)</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="cand-name">Candidate Name</label>
-                        <input type="text" id="cand-name" class="form-input" value="Custom Candidate">
-                    </div>
-
-                    <div class="scores-grid">
-                        <div class="form-group">
-                            <label for="score-ats">ATS Match (%)</label>
-                            <input type="number" id="score-ats" class="form-input" value="80" min="0" max="120">
-                        </div>
-                        <div class="form-group">
-                            <label for="score-screening">Screening AI (%)</label>
-                            <input type="number" id="score-screening" class="form-input" value="75" min="0" max="100">
-                        </div>
-                    </div>
-
-                    <div class="scores-grid">
-                        <div class="form-group">
-                            <label for="score-hr">HR Fit (%)</label>
-                            <input type="number" id="score-hr" class="form-input" value="80" min="0" max="100">
-                        </div>
-                        <div class="form-group">
-                            <label for="score-technical">Technical AI (%)</label>
-                            <input type="number" id="score-technical" class="form-input" value="85" min="0" max="100">
+                        <label>Resume Upload (.PDF / .TXT)</label>
+                        <div class="file-upload-wrapper">
+                            <span id="file-upload-title" style="font-size: 0.85rem; color: var(--text-muted);">Choose resume file or click drag</span>
+                            <input type="file" id="resume-file" class="file-input" onchange="handleFileSelected()">
+                            <div class="file-name-label" id="file-name-label">File ready</div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="score-machine">Machine Challenge Sandbox (%)</label>
-                        <input type="number" id="score-machine" class="form-input" value="80" min="0" max="100">
+                        <label for="preset-resume-select">Or Paste Resume Text / Choose Preset</label>
+                        <select id="preset-resume-select" class="form-select" onchange="loadPresetResumeText()">
+                            <option value="">-- Choose Preset Text --</option>
+                            <option value="strong_mern">Arjun Nair (Strong MERN Profile)</option>
+                            <option value="average_mern">Rahul Kumar (Average MERN Profile)</option>
+                            <option value="sales_exec">Suresh Menan (Sales Executive Profile)</option>
+                        </select>
                     </div>
 
-                    <div class="scores-grid">
-                        <div class="form-group">
-                            <label for="risk-behavior">Behavior Risk</label>
-                            <select id="risk-behavior" class="form-select">
-                                <option value="Low Risk">Low Risk</option>
-                                <option value="Moderate Risk">Moderate Risk</option>
-                                <option value="High Risk">High Risk</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="risk-integrity">Integrity Risk</label>
-                            <select id="risk-integrity" class="form-select">
-                                <option value="Low Risk">Low Risk</option>
-                                <option value="Moderate Risk">Moderate Risk</option>
-                                <option value="High Risk">High Risk</option>
-                            </select>
-                        </div>
+                    <div class="form-group">
+                        <label for="resume-text">Resume Raw Content</label>
+                        <textarea id="resume-text" class="form-textarea" placeholder="Paste resume skills and experience text blocks..."></textarea>
                     </div>
 
-                    <button class="run-btn" onclick="startPipelineRun()">Launch Evaluation Pipeline</button>
+                    <button class="btn-action" onclick="submitApplication()">Submit Job Application</button>
                 </aside>
 
-                <!-- Stepper & Simulation Logs Area -->
-                <section class="simulation-area">
-                    <!-- Visual Stepper -->
-                    <div class="stepper-container">
-                        <div class="section-title">
-                            <span>Evaluations Progression Pipeline</span>
+                <!-- Right workspace: Pipeline Stepper -->
+                <section class="workspace-area">
+                    <div class="stepper-row">
+                        <div class="step" id="step-1">
+                            <div class="step-num">1</div>
+                            <div class="step-label">ATS Check</div>
                         </div>
-                        <div class="stepper">
-                            <div class="step-progress-bar" id="step-progress"></div>
-                            
-                            <div class="step" id="step-1">
-                                <div class="step-circle">1</div>
-                                <div class="step-title">Resume Parsing</div>
+                        <div class="step" id="step-2">
+                            <div class="step-num">2</div>
+                            <div class="step-label">Voice Screening</div>
+                        </div>
+                        <div class="step" id="step-3">
+                            <div class="step-num">3</div>
+                            <div class="step-label">Skills Assessment</div>
+                        </div>
+                        <div class="step" id="step-4">
+                            <div class="step-num">4</div>
+                            <div class="step-label">HR Negotiation</div>
+                        </div>
+                        <div class="step" id="step-5">
+                            <div class="step-num">5</div>
+                            <div class="step-label">Offer Dispatch</div>
+                        </div>
+                    </div>
+
+                    <!-- WORKSPACE 1: ATS SCORE RESULT -->
+                    <div class="workspace-panel" id="panel-ats">
+                        <div class="section-title">
+                            <span>Stage 1: AI ATS Screening Analytics</span>
+                        </div>
+                        <div class="ats-results">
+                            <div class="circle-gauge" id="ats-gauge">
+                                <span style="font-size: 2rem; font-weight: 700;" id="ats-score-output">0%</span>
+                                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">ATS Score</span>
                             </div>
-                            <div class="step" id="step-2">
-                                <div class="step-circle">2</div>
-                                <div class="step-title">ATS Filter</div>
-                            </div>
-                            <div class="step" id="step-3">
-                                <div class="step-circle">3</div>
-                                <div class="step-title">Screening AI</div>
-                            </div>
-                            <div class="step" id="step-4">
-                                <div class="step-circle">4</div>
-                                <div class="step-title">HR Interview</div>
-                            </div>
-                            <div class="step" id="step-5">
-                                <div class="step-circle">5</div>
-                                <div class="step-title">Technical Test</div>
-                            </div>
-                            <div class="step" id="step-6">
-                                <div class="step-circle">6</div>
-                                <div class="step-title">Decision Engine</div>
+                            <div>
+                                <h3 style="margin-bottom: 0.5rem;" id="ats-verdict">Evaluating Candidate Job Match...</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">The system parsed candidate requirements against job specs.</p>
+                                
+                                <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted);">Extracted Skills</h4>
+                                <div class="skills-container" id="ats-skills-badge">
+                                    <!-- Badges -->
+                                </div>
+                                <button class="btn-action" id="btn-to-screening" style="margin-top: 1.5rem; width: auto; padding: 0.6rem 1.5rem; display: none;" onclick="goToVoiceScreening()">Proceed to Voice Screening Call</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Logger console panel -->
-                    <div class="console-panel">
-                        <div class="console-header">
-                            <div class="console-title">Live System Pipeline Logs Stream</div>
-                            <span style="font-size: 0.7rem; color: var(--text-muted)">STDOUT</span>
+                    <!-- WORKSPACE 2: VOICE SCREENING CALL -->
+                    <div class="workspace-panel" id="panel-voice">
+                        <div class="section-title">
+                            <span>Stage 2: Outbound AI voice Screening Call</span>
                         </div>
-                        <div class="console-body" id="console-logs">
-                            <div class="log-row"><span class="log-time">[SYSTEM]</span> Ready to process candidate simulations. Select parameters and click Launch.</div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">A natural sounding AI bot is conducting the call to verify details.</p>
+                        
+                        <div class="call-card">
+                            <div class="call-header">
+                                <div style="font-weight: 600;" id="call-status">Call Status: Connected</div>
+                                <div class="voice-wave">
+                                    <div class="voice-bar"></div>
+                                    <div class="voice-bar"></div>
+                                    <div class="voice-bar"></div>
+                                    <div class="voice-bar"></div>
+                                </div>
+                            </div>
+                            <div class="dialogue-stream" id="voice-stream">
+                                <!-- Dialogues -->
+                            </div>
+                            
+                            <!-- Voice Input Box -->
+                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                <input type="text" id="voice-input" class="form-input" placeholder="Speak/Type your answer here..." onkeypress="handleVoiceEnter(event)">
+                                <button class="btn-action" style="width: 80px;" onclick="submitVoiceResponse()">Speak</button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Evaluation scorecard results panel -->
-                    <div class="results-panel" id="results-panel">
+                    <!-- WORKSPACE 3: ASSESSMENT ROUND (Role Specific) -->
+                    <div class="workspace-panel" id="panel-assessment">
                         <div class="section-title">
-                            <span>Aggregated Hiring Report Output</span>
+                            <span>Stage 3: Candidate Competency & Code Sandbox Assessment</span>
                         </div>
-                        <div class="results-grid">
-                            <!-- Circular Gauge -->
-                            <div class="gauge-wrapper">
-                                <div class="score-circle" id="score-gauge">
-                                    <span class="score-val" id="score-output">0%</span>
-                                    <span class="score-label">Final Score</span>
+                        
+                        <div id="assessment-container">
+                            <!-- Injected by job applied role -->
+                        </div>
+                    </div>
+
+                    <!-- WORKSPACE 4: SALARY NEGOTIATION -->
+                    <div class="workspace-panel" id="panel-negotiation">
+                        <div class="section-title">
+                            <span>Stage 4: Autonomous HR interview & Salary Negotiation</span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">HR Bot will align expectations with company budget models.</p>
+                        
+                        <div class="call-card">
+                            <div class="dialogue-stream" id="negotiation-stream">
+                                <!-- Dialogue counter offers -->
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                <input type="number" id="negotiation-input" class="form-input" placeholder="Enter expected annual salary in USD (e.g. 95000)">
+                                <button class="btn-action" style="width: 140px;" onclick="submitNegotiationResponse()">Counter Offer</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WORKSPACE 5: FINAL OFFER LETTER -->
+                    <div class="workspace-panel" id="panel-offer">
+                        <div class="section-title">
+                            <span>Stage 5: Automated Offer Letter dispatch</span>
+                        </div>
+                        
+                        <div class="offer-letter-doc">
+                            <div class="offer-header">
+                                <div>
+                                    <h2 style="color: #6366f1; font-weight: 700;">ZECPATH AI PORTAL</h2>
+                                    <span style="font-size: 0.75rem; color: #6b7280; font-family: sans-serif;">HR DEPT - DECENTRALIZED RECRUITMENT</span>
                                 </div>
-                                <div class="decision-badge" id="decision-badge">HOLD</div>
+                                <span style="font-size: 0.85rem; color: #4b5563; font-family: sans-serif;">OFFER CONFIRMED</span>
                             </div>
                             
-                            <!-- Detailed Report values -->
-                            <div class="report-details">
-                                <div class="card-metrics">
-                                    <div class="metric-card">
-                                        <div class="metric-card-title">ATS Score</div>
-                                        <div class="metric-card-val" id="res-ats">0%</div>
-                                    </div>
-                                    <div class="metric-card">
-                                        <div class="metric-card-title">Screening</div>
-                                        <div class="metric-card-val" id="res-screening">0%</div>
-                                    </div>
-                                    <div class="metric-card">
-                                        <div class="metric-card-title">HR Fit</div>
-                                        <div class="metric-card-val" id="res-hr">0%</div>
-                                    </div>
-                                    <div class="metric-card">
-                                        <div class="metric-card-title">Technical</div>
-                                        <div class="metric-card-val" id="res-tech">0%</div>
-                                    </div>
-                                    <div class="metric-card">
-                                        <div class="metric-card-title">Sandbox</div>
-                                        <div class="metric-card-val" id="res-machine">0%</div>
-                                    </div>
+                            <div class="offer-body">
+                                <p><strong>Date:</strong> <span id="offer-date">July 14, 2026</span></p>
+                                <p><strong>To,</strong> <br><span id="offer-name">John Doe</span></p>
+                                
+                                <p>We are delighted to offer you the position of <strong><span id="offer-role">MERN Developer</span></strong> at Zecpath. Based on your outstanding evaluation score matching our core hiring pipeline criteria, we are pleased to confirm the following terms of employment:</p>
+                                
+                                <p><strong>Base Compensation:</strong> $<span id="offer-salary">0.00</span> USD per annum.</p>
+                                <p><strong>Joining Date:</strong> August 1st, 2026.</p>
+                                <p><strong>Key Duties:</strong> Backend microservices engineering, system optimization models, and AI observability logic.</p>
+                                
+                                <p>Please confirm your acceptance of this automated offer by signing below.</p>
+                            </div>
+                            
+                            <div class="signature-box">
+                                <div>
+                                    <div style="font-size: 0.8rem; font-weight: 600; color: #4b5563;">Hiring Authority</div>
+                                    <div style="font-family: cursive; font-size: 1.2rem; color: #6366f1; margin: 0.35rem 0;">Zecpath HR Bot</div>
+                                    <div style="border-top: 1px solid #d1d5db; width: 150px;"></div>
                                 </div>
-
-                                <div class="strengths-weaknesses">
-                                    <div class="sw-box strengths">
-                                        <h4>Strengths Identifiers</h4>
-                                        <ul class="sw-list" id="strengths-list">
-                                            <li>Evaluating pipeline...</li>
-                                        </ul>
-                                    </div>
-                                    <div class="sw-box weaknesses">
-                                        <h4>Behavior & Integrity Risks</h4>
-                                        <ul class="sw-list" id="risks-list">
-                                            <li>Evaluating pipeline...</li>
-                                        </ul>
-                                    </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; font-weight: 600; color: #4b5563;">Candidate Signature</div>
+                                    <div style="font-family: cursive; font-size: 1.2rem; color: #4b5563; margin: 0.35rem 0; cursor: pointer;" onclick="signOfferLetter()">Click to E-Sign</div>
+                                    <div style="border-top: 1px solid #d1d5db; width: 150px;" id="signature-line"></div>
                                 </div>
                             </div>
                         </div>
@@ -861,280 +829,450 @@ INDEX_HTML = """
             </div>
         </div>
 
-        <!-- TAB 2: OBSERVABILITY DASHBOARD -->
-        <div id="observability" class="tab-content">
-            <div class="metrics-overview">
-                <div class="metric-hero">
-                    <div class="metric-hero-title">Avg Latency</div>
-                    <div class="metric-hero-val" id="metric-latency">0.95s</div>
+        <!-- TAB 2: RECRUITER CONSOLE -->
+        <div id="recruiter-tab" class="tab-content">
+            <div class="rec-metrics">
+                <div class="rec-metric-card">
+                    <div style="font-size: 0.8rem; color: var(--text-muted)">Evaluations Ingested</div>
+                    <div class="rec-metric-val" id="rec-total-runs">0</div>
                 </div>
-                <div class="metric-hero">
-                    <div class="metric-hero-title">Success Rate</div>
-                    <div class="metric-hero-val" id="metric-success">98.5%</div>
+                <div class="rec-metric-card">
+                    <div style="font-size: 0.8rem; color: var(--text-muted)">Average ATS score</div>
+                    <div class="rec-metric-val" id="rec-avg-ats">0%</div>
                 </div>
-                <div class="metric-hero">
-                    <div class="metric-hero-title">Alert Status</div>
-                    <div class="metric-hero-val" id="metric-alert" style="color: var(--color-success)">NOMINAL</div>
-                </div>
-                <div class="metric-hero">
-                    <div class="metric-hero-title">Evaluations Ingested</div>
-                    <div class="metric-hero-val" id="metric-runs">0</div>
+                <div class="rec-metric-card">
+                    <div style="font-size: 0.8rem; color: var(--text-muted)">Hiring Conversion Rate</div>
+                    <div class="rec-metric-val">100%</div>
                 </div>
             </div>
 
-            <div class="alerts-panel">
+            <div class="card-panel">
                 <div class="section-title">
-                    <span>Active Observability Anomalies Logs</span>
+                    <span>Recruiter Candidate Tracking Pipeline</span>
                 </div>
-                <div id="active-alerts-container">
-                    <div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem;">No active alert violations. System metrics nominal.</div>
-                </div>
+                <table class="pipeline-table">
+                    <thead>
+                        <tr>
+                            <th>Candidate ID</th>
+                            <th>Job Applied</th>
+                            <th>ATS Score</th>
+                            <th>Screening</th>
+                            <th>Decision Recommendation</th>
+                            <th>Offer Dispatched</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recruiter-pipeline-rows">
+                        <!-- Table Rows -->
+                    </tbody>
+                </table>
             </div>
-        </div>
-
-        <!-- TAB 3: DEVELOPER HANDBOOK -->
-        <div id="handbook" class="tab-content">
-            <article class="handbook-panel">
-                <h2>Zecpath AI - Integration Framework Guide</h2>
-                <p>Welcome to the developer manual. This system utilizes high-accuracy scoring models decoupled into dedicated pipeline stages.</p>
-                
-                <h2>API Operations Reference</h2>
-                <pre><code>POST /api/simulate
-Content-Type: application/json
-
-{
-  "candidate_id": "C001",
-  "name": "Arjun Nair",
-  "ats_score": 85,
-  "screening_score": 80,
-  "hr_score": 85,
-  "technical_score": 88,
-  "machine_test_score": 85,
-  "behavior_risk": "Low Risk",
-  "integrity_risk": "Low Risk"
-}</code></pre>
-
-                <h2>Pipeline Weight Calculations</h2>
-                <p>Calculations are normalized and aggregated applying the core formula parameters:</p>
-                <pre><code>Final Score = (ATS * 20%) + (Screening * 15%) + (HR * 20%) + (Technical * 25%) + (Machine sandbox * 20%)</code></pre>
-                <p>Risk deductions: Behavior Risk Deducts up to 10 points. Cheating Integrity Risk Deducts up to 15 points.</p>
-            </article>
         </div>
     </main>
 
     <script>
-        const PRESETS = {
-            c001: { name: "Arjun Nair", ats: 85, screening: 80, hr: 85, tech: 88, machine: 85, behavior: "Low Risk", integrity: "Low Risk" },
-            c002: { name: "Rahul Kumar", ats: 65, screening: 68, hr: 70, tech: 70, machine: 65, behavior: "Moderate Risk", integrity: "Low Risk" },
-            c003: { name: "Ankit Sharma", ats: 40, screening: 50, hr: 55, tech: 45, machine: 40, behavior: "High Risk", integrity: "Moderate Risk" }
+        const PRESET_RESUMES = {
+            strong_mern: "Arjun Nair has over 3 years of experience as a MERN Stack Developer. Arjun is expert in building APIs using react, node.js, express, and mongodb database modeling. Skilled in Javascript coding and system optimizations.",
+            average_mern: "Rahul Kumar has 2 years of software engineering experience. Skilled in html, css, flask, and basics of react and node.js. Familar with Javascript and databases.",
+            sales_exec: "Suresh Menan is an experienced Sales Executive with 4 years in lead generation and negotiation. Suresh is skilled in cold calling, communication, and managing sales CRM workflows."
         };
 
-        let evaluationCounter = 0;
+        let currentRoleKey = 'mern';
+        let currentCandidate = {
+            id: '',
+            name: '',
+            ats_score: 0,
+            skills: [],
+            screening_questions_idx: 0,
+            expected_salary: 0,
+            negotiation_attempts: 0
+        };
+
+        let recruiterData = [];
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
         }
 
-        function loadPresetProfile() {
-            const presetVal = document.getElementById('profile-select').value;
-            if (presetVal === 'custom') return;
-            
-            const preset = PRESETS[presetVal];
-            document.getElementById('cand-name').value = preset.name;
-            document.getElementById('score-ats').value = preset.ats;
-            document.getElementById('score-screening').value = preset.screening;
-            document.getElementById('score-hr').value = preset.hr;
-            document.getElementById('score-technical').value = preset.tech;
-            document.getElementById('score-machine').value = preset.machine;
-            document.getElementById('risk-behavior').value = preset.behavior;
-            document.getElementById('risk-integrity').value = preset.integrity;
+        function loadJobRequirement() {
+            currentRoleKey = document.getElementById('job-select').value;
         }
 
-        function addLog(message, type = 'info') {
-            const consoleBody = document.getElementById('console-logs');
-            const row = document.createElement('div');
-            row.className = 'log-row';
+        function handleFileSelected() {
+            const fileInput = document.getElementById('resume-file');
+            const fileLabel = document.getElementById('file-name-label');
+            const fileTitle = document.getElementById('file-upload-title');
             
-            const timeSpan = document.createElement('span');
-            timeSpan.className = 'log-time';
-            timeSpan.innerText = `[${new Date().toLocaleTimeString()}]`;
-            
-            const msgSpan = document.createElement('span');
-            msgSpan.className = `log-${type}`;
-            msgSpan.innerText = message;
-            
-            row.appendChild(timeSpan);
-            row.appendChild(msgSpan);
-            consoleBody.appendChild(row);
-            consoleBody.scrollTop = consoleBody.scrollHeight;
-        }
-
-        async function startPipelineRun() {
-            const name = document.getElementById('cand-name').value;
-            const ats = parseFloat(document.getElementById('score-ats').value);
-            const screening = parseFloat(document.getElementById('score-screening').value);
-            const hr = parseFloat(document.getElementById('score-hr').value);
-            const tech = parseFloat(document.getElementById('score-technical').value);
-            const machine = parseFloat(document.getElementById('score-machine').value);
-            const behavior = document.getElementById('risk-behavior').value;
-            const integrity = document.getElementById('risk-integrity').value;
-
-            // Reset UI States
-            document.getElementById('results-panel').style.display = 'none';
-            document.querySelectorAll('.step').forEach(s => s.className = 'step');
-            document.getElementById('step-progress').style.width = '0%';
-            
-            // Stepper Progression Animation Simulation
-            const steps = [
-                { id: 1, delay: 600, log: "Parsing candidate application resume text...", type: 'info' },
-                { id: 2, delay: 600, log: `Applying ATS job description keyword matching patterns: Score ${ats}%`, type: 'info' },
-                { id: 3, delay: 600, log: `Parsing Screening intent and conversational transcripts: Score ${screening}%`, type: 'info' },
-                { id: 4, delay: 600, log: `Analyzing voice stress markers and confidence patterns: Score ${hr}%`, type: 'info' },
-                { id: 5, delay: 600, log: `Executing code correctness parser and test sandbox: Score ${tech}%`, type: 'info' },
-                { id: 6, delay: 600, log: "Integrating score aggregates and checking behavioral risks parameters...", type: 'success' }
-            ];
-
-            for (let i = 0; i < steps.length; i++) {
-                const step = steps[i];
-                document.getElementById(`step-${step.id}`).classList.add('active');
-                addLog(step.log, step.type);
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileTitle.innerText = "Selected Resume File:";
+                fileLabel.innerText = file.name;
+                fileLabel.style.display = "block";
                 
-                await new Promise(r => setTimeout(r, step.delay));
-                
-                document.getElementById(`step-${step.id}`).classList.remove('active');
-                document.getElementById(`step-${step.id}`).classList.add('completed');
-                document.getElementById('step-progress').style.width = `${((i + 1) / steps.length) * 100}%`;
+                // Simulate reading text from file
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('resume-text').value = e.target.result;
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function loadPresetResumeText() {
+            const key = document.getElementById('preset-resume-select').value;
+            if (key) {
+                document.getElementById('resume-text').value = PRESET_RESUMES[key];
+            }
+        }
+
+        async function submitApplication() {
+            const role = document.getElementById('job-select').value;
+            const text = document.getElementById('resume-text').value;
+            
+            if (!text.trim()) {
+                alert("Please upload a file or paste resume text!");
+                return;
             }
 
-            // Hit backend API to run core evaluations logic
-            addLog("Executing core decision pipeline algorithm...", "info");
+            // Reset stepper and tabs
+            document.querySelectorAll('.step').forEach(s => s.className = 'step');
+            document.querySelectorAll('.workspace-panel').forEach(p => p.classList.remove('active'));
+
+            document.getElementById('step-1').classList.add('active');
+            document.getElementById('panel-ats').classList.add('active');
+
             try {
-                const response = await fetch('/api/simulate', {
+                // Submit application to parse
+                const formData = new FormData();
+                formData.append("role_key", role);
+                formData.append("resume_text", text);
+                
+                const response = await fetch('/api/apply', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                currentCandidate.id = result.candidate_id;
+                currentCandidate.name = result.name;
+                currentCandidate.ats_score = result.ats_score;
+                currentCandidate.skills = result.skills;
+                currentCandidate.screening_questions_idx = 0;
+                currentCandidate.negotiation_attempts = 0;
+                
+                // Update ATS Panel
+                document.getElementById('ats-score-output').innerText = Math.round(result.ats_score) + '%';
+                document.getElementById('ats-gauge').style.background = `radial-gradient(circle, var(--bg-panel) 55%, transparent 60%), conic-gradient(var(--color-primary) ${result.ats_score}%, rgba(255,255,255,0.05) ${result.ats_score}%)`;
+                
+                const verdict = document.getElementById('ats-verdict');
+                const btnScreening = document.getElementById('btn-to-screening');
+                const skillsBadge = document.getElementById('ats-skills-badge');
+                
+                skillsBadge.innerHTML = '';
+                result.skills.forEach(s => {
+                    skillsBadge.innerHTML += `<span class="skill-badge">${s}</span>`;
+                });
+
+                if (result.ats_score >= 60) {
+                    verdict.innerText = "Congratulations! ATS Shortlisted Successfully";
+                    verdict.style.color = "var(--color-success)";
+                    btnScreening.style.display = "inline-block";
+                    document.getElementById('step-1').className = 'step completed';
+                } else {
+                    verdict.innerText = "Application Rejected: Score below hiring threshold.";
+                    verdict.style.color = "var(--color-danger)";
+                    btnScreening.style.display = "none";
+                }
+            } catch (err) {
+                alert("ATS Error: " + err);
+            }
+        }
+
+        // STAGE 2: VOICE SCREENING
+        function goToVoiceScreening() {
+            document.getElementById('panel-ats').classList.remove('active');
+            document.getElementById('panel-voice').classList.add('active');
+            document.getElementById('step-2').classList.add('active');
+            
+            // Start voice bot question loop
+            const stream = document.getElementById('voice-stream');
+            stream.innerHTML = '';
+            
+            const intro = `Hello ${currentCandidate.name}. I am the Zecpath AI voice screening bot. Let's start. Please introduce yourself and highlight your experience.`;
+            appendBubble(intro, 'ai');
+        }
+
+        function appendBubble(text, speaker) {
+            const stream = document.getElementById('voice-stream');
+            const bubble = document.createElement('div');
+            bubble.className = `bubble ${speaker}`;
+            bubble.innerText = text;
+            stream.appendChild(bubble);
+            stream.scrollTop = stream.scrollHeight;
+        }
+
+        const SCREENING_QUESTIONS = [
+            "What is your expected salary per annum in USD?",
+            "What is your current location and notice period?"
+        ];
+
+        function handleVoiceEnter(event) {
+            if (event.key === 'Enter') {
+                submitVoiceResponse();
+            }
+        }
+
+        function submitVoiceResponse() {
+            const input = document.getElementById('voice-input');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            appendBubble(text, 'user');
+            input.value = '';
+            
+            // Check expected salary extraction from user chat bubble
+            if (currentCandidate.screening_questions_idx === 0) {
+                const match = text.match(/\\d+/);
+                if (match) {
+                    currentCandidate.expected_salary = parseFloat(match[0]);
+                } else {
+                    currentCandidate.expected_salary = 90000; # default counter
+                }
+            }
+
+            setTimeout(() => {
+                if (currentCandidate.screening_questions_idx < SCREENING_QUESTIONS.length) {
+                    const nextQ = SCREENING_QUESTIONS[currentCandidate.screening_questions_idx];
+                    appendBubble(nextQ, 'ai');
+                    currentCandidate.screening_questions_idx++;
+                } else {
+                    appendBubble("Thank you! Voice screening completed. We are loading your round 3 competency assessment...", 'ai');
+                    document.getElementById('step-2').className = 'step completed';
+                    
+                    setTimeout(() => {
+                        loadAssessmentStage();
+                    }, 1500);
+                }
+            }, 1000);
+        }
+
+        // STAGE 3: SKILLS ASSESSMENT
+        function loadAssessmentStage() {
+            document.getElementById('panel-voice').classList.remove('active');
+            document.getElementById('panel-assessment').classList.add('active');
+            document.getElementById('step-3').classList.add('active');
+            
+            const container = document.getElementById('assessment-container');
+            container.innerHTML = '';
+            
+            if (currentRoleKey === 'mern') {
+                container.innerHTML = `
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Complete the programming challenge in the JavaScript sandbox:</p>
+                    <div class="editor-container">
+                        <div class="editor-header">
+                            <span>Javascript sandbox editor (isPalindrome)</span>
+                            <span>main.js</span>
+                        </div>
+                        <textarea class="editor-textarea" id="editor-code">function isPalindrome(str) {\\n  // Write code here\\n  return str.split('').reverse().join('') === str;\\n}</textarea>
+                        <div class="editor-terminal" id="terminal-out">Terminal: Ready to run tests.</div>
+                    </div>
+                    <button class="btn-action" style="margin-top: 1rem;" onclick="submitAssessment()">Submit & Compile Code</button>
+                `;
+            } else if (currentRoleKey === 'sales') {
+                container.innerHTML = `
+                    <p style="font-size: 0.9rem; margin-bottom: 1rem;">Answer the business scenario multiple-choice question:</p>
+                    <div class="form-group">
+                        <p style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.75rem;">Which strategy is best for handling a customer objection about price?</p>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label><input type="radio" name="aptitude" value="A"> A. Suggest discount instantly to close sales.</label>
+                            <label><input type="radio" name="aptitude" value="B"> B. Re-emphasize value and ROI matching business outcomes.</label>
+                            <label><input type="radio" name="aptitude" value="C"> C. Explain that pricing is fixed and cannot be changed.</label>
+                            <label><input type="radio" name="aptitude" value="D"> D. Recommend competitor alternatives.</label>
+                        </div>
+                    </div>
+                    <button class="btn-action" onclick="submitAssessment()">Submit Answer</button>
+                `;
+            } else {
+                container.innerHTML = `
+                    <p style="font-size: 0.9rem; margin-bottom: 1rem;">Design theory assessment question:</p>
+                    <div class="form-group">
+                        <p style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.75rem;">What does usability heuristics rule 'Consistency and Standards' refer to?</p>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label><input type="radio" name="design" value="A"> A. Using unique layouts on every page.</label>
+                            <label><input type="radio" name="design" value="B"> B. Maintaining uniform platform controls and patterns.</label>
+                            <label><input type="radio" name="design" value="C"> C. Selecting bright primary colors.</label>
+                            <label><input type="radio" name="design" value="D"> D. Ensuring high security authentication.</label>
+                        </div>
+                    </div>
+                    <button class="btn-action" onclick="submitAssessment()">Submit Answer</button>
+                `;
+            }
+        }
+
+        async function submitAssessment() {
+            let code = "";
+            let choice = "";
+            
+            if (currentRoleKey === 'mern') {
+                code = document.getElementById('editor-code').value;
+                const term = document.getElementById('terminal-out');
+                term.innerText = "Compiling JavaScript in sandbox environment...";
+            } else {
+                const name = currentRoleKey === 'sales' ? 'aptitude' : 'design';
+                const checked = document.querySelector(`input[name="${name}"]:checked`);
+                if (!checked) {
+                    alert("Please select an answer!");
+                    return;
+                }
+                choice = checked.value;
+            }
+
+            try {
+                const response = await fetch('/api/assessment/evaluate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        candidate_id: 'C_UI_' + Math.floor(Math.random() * 1000),
-                        name, ats_score: ats, screening_score: screening,
-                        hr_score: hr, technical_score: tech, machine_test_score: machine,
-                        behavior_risk: behavior, integrity_risk: integrity
+                        role_key: currentRoleKey,
+                        code_content: code,
+                        aptitude_answer: choice
                     })
                 });
-                
                 const result = await response.json();
                 
-                // Show outcomes
-                displayResults(result);
-                evaluationCounter++;
-                updateObservabilityMetrics(result);
-                addLog(`Hiring recommendation generated successfully: ${result.decision}`, "success");
+                if (currentRoleKey === 'mern') {
+                    const term = document.getElementById('terminal-out');
+                    term.innerText = "Compilation details: " + result.message + " | Sandbox Score: " + result.score + "%";
+                }
+
+                currentCandidate.assessment_score = result.score;
+                document.getElementById('step-3').className = 'step completed';
+
+                setTimeout(() => {
+                    loadNegotiationStage();
+                }, 1500);
             } catch (err) {
-                addLog("API Simulation error encountered: " + err, "warn");
+                alert("Assessment error: " + err);
             }
         }
 
-        function displayResults(data) {
-            document.getElementById('results-panel').style.display = 'block';
+        // STAGE 4: NEGOTIATION
+        function loadNegotiationStage() {
+            document.getElementById('panel-assessment').classList.remove('active');
+            document.getElementById('panel-negotiation').classList.add('active');
+            document.getElementById('step-4').classList.add('active');
             
-            // final score and gauge
-            const roundedScore = Math.round(data.final_score);
-            document.getElementById('score-output').innerText = roundedScore + '%';
-            document.getElementById('score-gauge').style.background = `radial-gradient(circle, var(--bg-panel) 55%, transparent 60%), conic-gradient(var(--color-primary) ${roundedScore}%, rgba(255,255,255,0.05) ${roundedScore}%)`;
+            const stream = document.getElementById('negotiation-stream');
+            stream.innerHTML = '';
             
-            // decision badge
-            const badge = document.getElementById('decision-badge');
-            badge.innerText = data.decision;
-            badge.className = 'decision-badge';
-            if (data.decision === 'Selected') badge.classList.add('badge-selected');
-            else if (data.decision === 'Hold / Review') badge.classList.add('badge-hold');
-            else badge.classList.add('badge-rejected');
-
-            // Metric Cards
-            document.getElementById('res-ats').innerText = Math.round(data.scores.ats) + '%';
-            document.getElementById('res-screening').innerText = Math.round(data.scores.screening) + '%';
-            document.getElementById('res-hr').innerText = Math.round(data.scores.hr) + '%';
-            document.getElementById('res-tech').innerText = Math.round(data.scores.technical) + '%';
-            document.getElementById('res-machine').innerText = Math.round(data.scores.machine_test) + '%';
-
-            // Strengths and risks
-            const strengthsList = document.getElementById('strengths-list');
-            const risksList = document.getElementById('risks-list');
-            
-            strengthsList.innerHTML = '';
-            risksList.innerHTML = '';
-            
-            if (data.final_score >= 75) {
-                strengthsList.innerHTML += '<li>Strong aggregate evaluations match rating</li>';
-            }
-            if (data.scores.technical >= 80) {
-                strengthsList.innerHTML += '<li>Advanced technical sandboxing and core programming knowledge</li>';
-            }
-            if (data.scores.ats >= 80) {
-                strengthsList.innerHTML += '<li>Strong alignment with requested Job Description parameters</li>';
-            }
-            if (strengthsList.innerHTML === '') {
-                strengthsList.innerHTML = '<li>No significant score indicators to report</li>';
-            }
-
-            // Risks
-            let hasRisks = false;
-            if (document.getElementById('risk-behavior').value !== 'Low Risk') {
-                risksList.innerHTML += `<li>Behavior Risk flagged: ${document.getElementById('risk-behavior').value}</li>`;
-                hasRisks = true;
-            }
-            if (document.getElementById('risk-integrity').value !== 'Low Risk') {
-                risksList.innerHTML += `<li>Integrity / Cheating risk flagged: ${document.getElementById('risk-integrity').value}</li>`;
-                hasRisks = true;
-            }
-            if (data.final_score < 60) {
-                risksList.innerHTML += '<li>Score total below baseline recruitment standards</li>';
-                hasRisks = true;
-            }
-            if (!hasRisks) {
-                risksList.innerHTML = '<li>No behavioral or integrity anomalies detected</li>';
-            }
+            const intro = `Based on your evaluation scores, you are qualified for employment. Your requested expected salary is $${currentCandidate.expected_salary} USD. Let's finalize contract expectations.`;
+            appendNegotiationBubble(intro, 'ai');
         }
 
-        function updateObservabilityMetrics(result) {
-            document.getElementById('metric-runs').innerText = evaluationCounter;
-            
-            // Check latency and active alerts
-            const alertsContainer = document.getElementById('active-alerts-container');
-            alertsContainer.innerHTML = '';
-            
-            let alerts = [];
-            
-            // Simulate random latency between 0.5s and 2.5s to test alerting triggers
-            const simulatedLatency = (Math.random() * 2 + 0.5).toFixed(2);
-            document.getElementById('metric-latency').innerText = simulatedLatency + 's';
-            
-            if (simulatedLatency > 2.0) {
-                alerts.push("High Latency Warning: Pipeline processing time exceeded 2.0s");
+        function appendNegotiationBubble(text, speaker) {
+            const stream = document.getElementById('negotiation-stream');
+            const bubble = document.createElement('div');
+            bubble.className = `bubble ${speaker}`;
+            bubble.innerText = text;
+            stream.appendChild(bubble);
+            stream.scrollTop = stream.scrollHeight;
+        }
+
+        async function submitNegotiationResponse() {
+            const input = document.getElementById('negotiation-input');
+            const val = parseFloat(input.value);
+            if (isNaN(val) || val <= 0) {
+                alert("Please enter a valid salary counter offer!");
+                return;
             }
-            
-            if (result.final_score < 50.0) {
-                alerts.push("Fail Rate Threshold Warning: Candidate score fell below minimum quality baseline");
-            }
-            
-            const alertStatus = document.getElementById('metric-alert');
-            if (alerts.length > 0) {
-                alertStatus.innerText = "WARNING";
-                alertStatus.style.color = "var(--color-danger)";
-                
-                alerts.forEach(a => {
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert-item';
-                    alertDiv.innerText = a;
-                    alertsContainer.appendChild(alertDiv);
+
+            appendNegotiationBubble(`My counter offer: $${val} USD`, 'user');
+            currentCandidate.expected_salary = val;
+            currentCandidate.negotiation_attempts++;
+
+            try {
+                const response = await fetch('/api/negotiate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        role_key: currentRoleKey,
+                        expected_salary: val,
+                        counter_offer_count: currentCandidate.negotiation_attempts
+                    })
                 });
-            } else {
-                alertStatus.innerText = "NOMINAL";
-                alertStatus.style.color = "var(--color-success)";
-                alertsContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem;">No active alert violations. System metrics nominal.</div>';
+                const result = await response.json();
+
+                setTimeout(() => {
+                    appendNegotiationBubble(result.message, 'ai');
+                    if (result.status === 'agreed') {
+                        currentCandidate.final_salary = result.salary;
+                        document.getElementById('step-4').className = 'step completed';
+                        
+                        setTimeout(() => {
+                            loadOfferStage();
+                        }, 1500);
+                    }
+                }, 1000);
+            } catch (err) {
+                alert("Negotiation error: " + err);
             }
+        }
+
+        // STAGE 5: OFFER LETTER
+        async function loadOfferStage() {
+            document.getElementById('panel-negotiation').classList.remove('active');
+            document.getElementById('panel-offer').classList.add('active');
+            document.getElementById('step-5').classList.add('active');
+            
+            // Set offer letters details
+            document.getElementById('offer-name').innerText = currentCandidate.name;
+            document.getElementById('offer-role').innerText = document.getElementById('job-select').options[document.getElementById('job-select').selectedIndex].text;
+            document.getElementById('offer-salary').innerText = currentCandidate.final_salary.toLocaleString();
+            
+            // Ingest candidate log to Recruiter tracking metrics
+            const finalScore = (currentCandidate.ats_score + currentCandidate.assessment_score) / 2;
+            const payload = {
+                id: currentCandidate.id,
+                role: currentCandidate.name,
+                ats: currentCandidate.ats_score,
+                screening: finalScore,
+                decision: finalScore >= 80 ? "Selected" : "Hold / Review",
+                offer: "Dispatched"
+            };
+            recruiterData.push(payload);
+            updateRecruiterConsole();
+        }
+
+        function signOfferLetter() {
+            const signatureLine = document.getElementById('signature-line');
+            signatureLine.innerHTML = `<span style="font-family: cursive; font-size: 1.2rem; color: #10b981;">${currentCandidate.name}</span>`;
+            document.getElementById('step-5').className = 'step completed';
+            alert("E-Signature Confirmed! Application pipeline fully completed!");
+        }
+
+        function updateRecruiterConsole() {
+            document.getElementById('rec-total-runs').innerText = recruiterData.length;
+            
+            const totalAts = recruiterData.reduce((acc, c) => acc + c.ats, 0);
+            const avgAts = recruiterData.length > 0 ? Math.round(totalAts / recruiterData.length) : 0;
+            document.getElementById('rec-avg-ats').innerText = avgAts + '%';
+
+            const tbody = document.getElementById('recruiter-pipeline-rows');
+            tbody.innerHTML = '';
+            recruiterData.forEach(c => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${c.id}</strong></td>
+                        <td>${c.role}</td>
+                        <td>${Math.round(c.ats)}%</td>
+                        <td>${Math.round(c.screening)}%</td>
+                        <td><span class="decision-badge badge-selected">${c.decision}</span></td>
+                        <td><span style="color: var(--color-success)">${c.offer}</span></td>
+                    </tr>
+                `;
+            });
         }
     </script>
 </body>
@@ -1145,56 +1283,101 @@ Content-Type: application/json
 def read_root():
     return INDEX_HTML
 
-@app.post("/api/simulate")
-def simulate_pipeline(cand: CandidateSimulationPayload):
-    # Pass metrics directly into backend aggregator logic
-    raw_scores = {
-        "ats": cand.ats_score,
-        "screening": cand.screening_score,
-        "hr": cand.hr_score,
-        "technical": cand.technical_score,
-        "machine_test": cand.machine_test_score
-    }
+@app.post("/api/apply")
+def apply_resume(role_key: str = Form(...), resume_text: str = Form(...)):
+    # Simulates parsing candidate name and calculating job-specific ATS scores
+    name_match = re.search(r"([A-Z][a-z]+ [A-Z][a-z]+)", resume_text)
+    candidate_name = name_match.group(1) if name_match else "Guest Applicant"
     
-    # Process pipeline metrics
-    res = release_pipeline(cand.candidate_id, raw_scores)
+    # Matching keywords
+    role_info = JOB_ROLES.get(role_key, JOB_ROLES["mern"])
+    skills_matched = []
     
-    # Apply deductions for Behavior & Integrity risk manually since it mirrors actual logic
-    final_score = res["final_score"]
+    for s in role_info["skills"]:
+        if s in resume_text.lower():
+            skills_matched.append(s.capitalize())
+            
+    # Score metrics
+    matched_count = len(skills_matched)
+    total_count = len(role_info["skills"])
+    ats_score = round((matched_count / total_count) * 100.0, 2) if total_count > 0 else 50.0
     
-    if cand.behavior_risk == "Moderate Risk":
-        final_score -= 10.0
-    elif cand.behavior_risk == "High Risk":
-        final_score -= 20.0
+    # Standard fallback
+    if ats_score < 40.0:
+        ats_score = 45.0 # fallback basic
         
-    if cand.integrity_risk == "Moderate Risk":
-        final_score -= 15.0
-    elif cand.integrity_risk == "High Risk":
-        final_score -= 30.0
-        
-    final_score = max(0.0, min(100.0, final_score))
-    
-    # Formulate decision recommendations
-    if final_score >= 80.0:
-        decision = "Selected"
-    elif final_score >= 60.0:
-        decision = "Hold / Review"
-    else:
-        decision = "Rejected"
-        
-    # Return formatted JSON metrics
     return {
-        "candidate_id": cand.candidate_id,
-        "scores": {
-            "ats": cand.ats_score,
-            "screening": cand.screening_score,
-            "hr": cand.hr_score,
-            "technical": cand.technical_score,
-            "machine_test": cand.machine_test_score
-        },
-        "final_score": round(final_score, 2),
-        "decision": decision
+        "candidate_id": f"C{int(time.time()) % 10000:04d}",
+        "name": candidate_name,
+        "ats_score": ats_score,
+        "skills": skills_matched
     }
+
+@app.post("/api/assessment/evaluate")
+def evaluate_assessment(payload: AssessmentPayload):
+    role = payload.role_key
+    role_info = JOB_ROLES.get(role, JOB_ROLES["mern"])
+    
+    if role_info["assessment_type"] == "coding":
+        # Simulate simple sandbox JavaScript correctness compiler checks
+        code = payload.code_content
+        if "reverse" in code and ("split" in code or "for" in code):
+            score = 100.0
+            msg = "Sandbox test cases passed. Function reverse() works."
+        else:
+            score = 50.0
+            msg = "Sandbox syntax error or logic output failed."
+    else:
+        # Aptitude answer evaluations
+        answer = payload.aptitude_answer
+        correct_answer = role_info.get("correct", "B")
+        if answer.strip().upper() == correct_answer:
+            score = 100.0
+            msg = "Correct answer selected."
+        else:
+            score = 0.0
+            msg = "Incorrect answer selected."
+            
+    return {
+        "score": score,
+        "message": msg
+    }
+
+@app.post("/api/negotiate")
+def negotiate_salary(payload: NegotiationPayload):
+    role = payload.role_key
+    role_info = JOB_ROLES.get(role, JOB_ROLES["mern"])
+    
+    min_budget = role_info["budget_min"]
+    max_budget = role_info["budget_max"]
+    expected = payload.expected_salary
+    
+    if expected <= max_budget:
+        # Agreed salary
+        agreed_salary = expected
+        return {
+            "status": "agreed",
+            "salary": agreed_salary,
+            "message": f"Perfect. We agree to your counter offer of ${agreed_salary:,} USD per annum."
+        }
+    else:
+        # Counter offer logic
+        if payload.counter_offer_count >= 3:
+            # force agree at max budget
+            return {
+                "status": "agreed",
+                "salary": max_budget,
+                "message": f"To proceed with selection, we have set the contract cap at our maximum role budget of ${max_budget:,} USD."
+            }
+        else:
+            # suggest halfway counter
+            midpoint = (expected + max_budget) / 2
+            counter_suggestion = round(midpoint)
+            return {
+                "status": "counter",
+                "salary": counter_suggestion,
+                "message": f"That is slightly above our budget limit. Can we align at a midpoint of ${counter_suggestion:,} USD per annum?"
+            }
 
 def open_browser():
     # Delay to let uvicorn startup server
