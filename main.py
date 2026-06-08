@@ -6,57 +6,227 @@ import webbrowser
 import threading
 import time
 import re
-from fastapi import FastAPI, UploadFile, File, Form
+import urllib.parse
+import sqlite3
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 import uvicorn
 
-app = FastAPI(title="Zecpath AI - Autonomous Hiring Job Portal")
+app = FastAPI(title="Zecpath AI - Autonomous Job Portal & Hiring Engine")
 
-# Active log logs container
-observability_logs = []
+# ----------------------------------------------------------------------
+# DATABASE CONFIGURATION & HELPERS (Neon PG / SQLite support)
+# ----------------------------------------------------------------------
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Mock Job Configurations
-JOB_ROLES = {
-    "mern": {
-        "title": "MERN Stack Developer",
-        "skills": ["react", "node.js", "express", "mongodb", "javascript"],
-        "budget_min": 80000,
-        "budget_max": 120000,
-        "assessment_type": "coding",
-        "instructions": "Implement a JavaScript function to reverse a string. Example: reverse('hello') -> 'olleh'."
-    },
-    "sales": {
-        "title": "Sales Executive",
-        "skills": ["communication", "negotiation", "crm", "leads", "sales"],
-        "budget_min": 50000,
-        "budget_max": 75000,
-        "assessment_type": "aptitude",
-        "question": "Which strategy is best for handling a customer objection about price?",
-        "options": [
-            "A. Suggest discount instantly to close sales.",
-            "B. Re-emphasize value and ROI matching business outcomes.",
-            "C. Explain that pricing is fixed and cannot be changed.",
-            "D. Recommend competitor alternatives."
-        ],
-        "correct": "B"
-    },
-    "uiux": {
-        "title": "UI/UX Designer",
-        "skills": ["figma", "wireframe", "prototype", "photoshop", "design"],
-        "budget_min": 70000,
-        "budget_max": 95000,
-        "assessment_type": "design_quiz",
-        "question": "What does usability heuristics rule 'Consistency and Standards' refer to?",
-        "options": [
-            "A. Using unique layouts on every page.",
-            "B. Maintaining uniform platform controls and patterns.",
-            "C. Selecting bright primary colors.",
-            "D. Ensuring high security authentication."
-        ],
-        "correct": "B"
-    }
-}
+def get_db_connection():
+    if DATABASE_URL:
+        try:
+            import psycopg2
+            result = urllib.parse.urlparse(DATABASE_URL)
+            username = result.username
+            password = result.password
+            database = result.path[1:]
+            hostname = result.hostname
+            port = result.port
+            conn = psycopg2.connect(
+                database=database,
+                user=username,
+                password=password,
+                host=hostname,
+                port=port
+            )
+            return conn, "postgresql"
+        except Exception as e:
+            print(f"[WARN] PostgreSQL connection failed: {e}. Falling back to SQLite.")
+            
+    conn = sqlite3.connect("zecpath.db")
+    conn.row_factory = sqlite3.Row
+    return conn, "sqlite"
+
+def db_execute(query, params=()):
+    conn, db_type = get_db_connection()
+    if db_type == "postgresql":
+        query = query.replace("?", "%s")
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    conn.commit()
+    conn.close()
+
+def db_query(query, params=()):
+    conn, db_type = get_db_connection()
+    if db_type == "postgresql":
+        query = query.replace("?", "%s")
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    
+    if db_type == "postgresql":
+        columns = [desc[0] for desc in cursor.description]
+        rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    else:
+        rows = [dict(row) for row in cursor.fetchall()]
+        
+    conn.close()
+    return rows
+
+def init_db():
+    queries = [
+        """
+        CREATE TABLE IF NOT EXISTS companies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            email TEXT UNIQUE,
+            password TEXT
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS jobs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            company_id INTEGER,
+            company_name TEXT,
+            title TEXT,
+            description TEXT,
+            skills_required TEXT,
+            budget_min INTEGER,
+            budget_max INTEGER,
+            assessment_type TEXT,
+            status TEXT DEFAULT 'open'
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS candidates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE,
+            password TEXT,
+            name TEXT,
+            contact_info TEXT,
+            gender TEXT,
+            location TEXT,
+            notice_period TEXT,
+            expected_salary INTEGER,
+            skills TEXT,
+            experience INTEGER,
+            resume_text TEXT
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS applications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            job_id INTEGER,
+            candidate_id INTEGER,
+            ats_score REAL,
+            screening_score REAL,
+            assessment_score REAL,
+            behavioral_score REAL,
+            negotiated_salary INTEGER,
+            status TEXT,
+            recruiter_override TEXT DEFAULT 'none',
+            offer_accepted TEXT DEFAULT 'pending',
+            screening_transcript TEXT,
+            assessment_details TEXT
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            candidate_id INTEGER,
+            title TEXT,
+            message TEXT,
+            read_status INTEGER DEFAULT 0
+        )
+        """
+    ]
+    conn, db_type = get_db_connection()
+    cursor = conn.cursor()
+    for q in queries:
+        if db_type == "postgresql":
+            q = q.replace("AUTOINCREMENT", "")
+            q = q.replace("INTEGER PRIMARY KEY", "SERIAL PRIMARY KEY")
+            q = q.replace("REAL", "DOUBLE PRECISION")
+        cursor.execute(q)
+    conn.commit()
+    conn.close()
+    
+    # Seed mock job posts if none exist
+    jobs = db_query("SELECT * FROM jobs")
+    if not jobs:
+        db_execute(
+            "INSERT INTO jobs (company_id, company_name, title, description, skills_required, budget_min, budget_max, assessment_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (1, "Zecpath Corporation", "MERN Stack Developer", "Develop interactive React interfaces and Node.js APIs.", "react,node.js,express,mongodb,javascript", 80000, 120000, "coding")
+        )
+        db_execute(
+            "INSERT INTO jobs (company_id, company_name, title, description, skills_required, budget_min, budget_max, assessment_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (2, "Alpha Tech Solutions", "Sales Executive", "Drive revenue goals and manage customer communication.", "communication,negotiation,crm,leads,sales", 50000, 75000, "aptitude")
+        )
+        db_execute(
+            "INSERT INTO jobs (company_id, company_name, title, description, skills_required, budget_min, budget_max, assessment_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (3, "Pixel Design Agency", "UI/UX Designer", "Design wireframes and user flow prototypes in Figma.", "figma,wireframe,prototype,photoshop,design", 70000, 95000, "design_quiz")
+        )
+
+# ----------------------------------------------------------------------
+# AUTHENTICATION & BUSINESS SCHEMAS
+# ----------------------------------------------------------------------
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+    user_type: str  # candidate or recruiter
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+    user_type: str  # candidate or recruiter
+
+class JobPostRequest(BaseModel):
+    company_name: str
+    title: str
+    description: str
+    skills_required: str
+    budget_min: int
+    budget_max: int
+    assessment_type: str
+
+class ProfileSaveRequest(BaseModel):
+    candidate_id: int
+    name: str
+    contact_info: str
+    gender: str
+    location: str
+    notice_period: str
+    expected_salary: int
+    skills: str
+    experience: int
+    resume_text: str
+
+class ApplyRequest(BaseModel):
+    candidate_id: int
+    job_id: int
+    name: str
+    contact_info: str
+    gender: str
+    location: str
+    notice_period: str
+    expected_salary: int
+    experience: int
+    resume_text: str
+
+class ScreeningSubmitRequest(BaseModel):
+    application_id: int
+    screening_score: float
+    transcript: str
+
+class AssessmentSubmitRequest(BaseModel):
+    application_id: int
+    score: float
+
+class OverrideRequest(BaseModel):
+    application_id: int
+    decision: str  # Selected, Rejected
+
+class OfferActionRequest(BaseModel):
+    application_id: int
+    action: str  # accepted, rejected
 
 class AssessmentPayload(BaseModel):
     role_key: str
@@ -68,14 +238,14 @@ class NegotiationPayload(BaseModel):
     expected_salary: float
     counter_offer_count: int
 
-# HTML layout definition
+# HTML SPA UI code
 INDEX_HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zecpath AI - Autonomous Job Portal</title>
+    <title>Zecpath - AI-Driven Autonomous Job Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -143,31 +313,28 @@ INDEX_HTML = """
             box-shadow: 0 0 10px var(--color-primary);
         }
 
-        .nav-tabs {
+        .user-status {
+            font-size: 0.85rem;
+            color: var(--text-muted);
             display: flex;
-            gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 0.25rem;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .tab-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 0.5rem 1.25rem;
-            font-size: 0.9rem;
-            font-weight: 500;
-            border-radius: 6px;
+        .btn-logout {
+            background-color: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--color-danger);
+            color: var(--color-danger);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 0.8rem;
             transition: all 0.2s ease;
         }
 
-        .tab-btn.active {
-            background-color: rgba(99, 102, 241, 0.15);
+        .btn-logout:hover {
+            background-color: var(--color-danger);
             color: #fff;
-            box-shadow: 0 0 10px var(--border-glow);
         }
 
         .main-container {
@@ -176,32 +343,17 @@ INDEX_HTML = """
             padding: 0 2rem;
         }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Layout Grid */
-        .portal-grid {
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 2rem;
-        }
-
         .card-panel {
             background-color: var(--bg-panel);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 12px;
-            padding: 1.5rem;
+            padding: 2rem;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            height: fit-content;
+            margin-bottom: 2rem;
         }
 
         .section-title {
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             font-weight: 600;
             margin-bottom: 1.25rem;
             color: #fff;
@@ -212,6 +364,7 @@ INDEX_HTML = """
             align-items: center;
         }
 
+        /* Form styling */
         .form-group {
             margin-bottom: 1.25rem;
         }
@@ -247,50 +400,17 @@ INDEX_HTML = """
             box-shadow: 0 0 8px var(--border-glow);
         }
 
-        .file-upload-wrapper {
-            position: relative;
-            border: 2px dashed rgba(255,255,255,0.1);
-            padding: 1.5rem;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            background: rgba(255,255,255,0.01);
-            transition: all 0.2s ease;
-        }
-
-        .file-upload-wrapper:hover {
-            border-color: var(--color-primary);
-            background: rgba(99, 102, 241, 0.02);
-        }
-
-        .file-input {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .file-name-label {
-            margin-top: 0.5rem;
-            font-size: 0.8rem;
-            color: var(--color-success);
-            display: none;
-        }
-
         .btn-action {
-            width: 100%;
             background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
             border: none;
             color: #fff;
-            padding: 0.8rem;
+            padding: 0.75rem 1.5rem;
             font-weight: 600;
             border-radius: 6px;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
             transition: all 0.2s ease;
+            display: inline-block;
         }
 
         .btn-action:hover {
@@ -298,13 +418,105 @@ INDEX_HTML = """
             box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
         }
 
-        /* Steps Stepper Panel */
-        .workspace-area {
-            display: flex;
-            flex-direction: column;
+        /* Auth Form */
+        .auth-container {
+            max-width: 420px;
+            margin: 4rem auto;
+        }
+
+        /* Grid Layouts */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
             gap: 2rem;
         }
 
+        /* Notifications Inbox */
+        .notifications-badge {
+            background-color: var(--color-danger);
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 10px;
+            margin-left: 0.5rem;
+        }
+
+        .notification-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .notification-card:hover {
+            border-color: var(--color-primary);
+            background: rgba(99, 102, 241, 0.02);
+        }
+
+        .notification-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+
+        .notification-body {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Job feed card list */
+        .job-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .job-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .job-card:hover {
+            border-color: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .job-info h3 {
+            font-size: 1.1rem;
+            color: #fff;
+            margin-bottom: 0.35rem;
+        }
+
+        .job-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .match-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.65rem;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        .match-strong { background-color: rgba(16, 185, 129, 0.15); border: 1px solid var(--color-success); color: var(--color-success); }
+        .match-good { background-color: rgba(245, 158, 11, 0.15); border: 1px solid var(--color-warning); color: var(--color-warning); }
+        .match-low { background-color: rgba(239, 68, 68, 0.15); border: 1px solid var(--color-danger); color: var(--color-danger); }
+
+        /* Stepper Flow progress */
         .stepper-row {
             display: flex;
             justify-content: space-between;
@@ -313,14 +525,14 @@ INDEX_HTML = """
             border: 1px solid rgba(255, 255, 255, 0.05);
             padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 2rem;
         }
 
         .step {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 90px;
+            width: 80px;
             position: relative;
             z-index: 2;
         }
@@ -337,7 +549,6 @@ INDEX_HTML = """
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
         }
 
         .step-label {
@@ -351,12 +562,6 @@ INDEX_HTML = """
             border-color: var(--color-primary);
             color: #fff;
             box-shadow: 0 0 10px var(--color-primary-glow);
-            animation: pulse-step 1.5s infinite;
-        }
-
-        .step.active .step-label {
-            color: #fff;
-            font-weight: 600;
         }
 
         .step.completed .step-num {
@@ -365,106 +570,13 @@ INDEX_HTML = """
             color: var(--color-success);
         }
 
-        .step.completed .step-label {
-            color: var(--color-success);
-        }
-
-        @keyframes pulse-step {
-            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
-        }
-
-        /* Ingest Workspace Panels */
-        .workspace-panel {
-            background-color: var(--bg-panel);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: none;
-        }
-
-        .workspace-panel.active {
-            display: block;
-        }
-
-        /* ATS Dashboard */
-        .ats-results {
-            display: grid;
-            grid-template-columns: 180px 1fr;
-            gap: 2rem;
-        }
-
-        .circle-gauge {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--bg-panel) 55%, transparent 60%),
-                        conic-gradient(var(--color-primary) 0%, rgba(255,255,255,0.05) 0%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-        }
-
-        .skills-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .skill-badge {
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            color: #a5b4fc;
-            padding: 0.25rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-        }
-
-        /* Voice Call Interface */
+        /* Dialogue Box voice */
         .call-card {
             border: 1px solid rgba(255,255,255,0.05);
             border-radius: 8px;
-            background: rgba(0,0,0,0.2);
+            background: rgba(0,0,0,0.25);
             padding: 1.5rem;
             margin-top: 1rem;
-        }
-
-        .call-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .voice-wave {
-            display: flex;
-            gap: 3px;
-            align-items: center;
-            height: 20px;
-        }
-
-        .voice-bar {
-            width: 3px;
-            height: 10px;
-            background-color: var(--color-success);
-            border-radius: 3px;
-            animation: bounce-bar 0.8s infinite ease-in-out alternate;
-        }
-
-        .voice-bar:nth-child(2) { animation-delay: 0.2s; height: 16px; }
-        .voice-bar:nth-child(3) { animation-delay: 0.4s; height: 12px; }
-        .voice-bar:nth-child(4) { animation-delay: 0.1s; height: 18px; }
-
-        @keyframes bounce-bar {
-            0% { transform: scaleY(0.4); }
-            100% { transform: scaleY(1.2); }
         }
 
         .dialogue-stream {
@@ -500,7 +612,7 @@ INDEX_HTML = """
             border-bottom-right-radius: 2px;
         }
 
-        /* Coding Sandbox Editor */
+        /* Sandbox Javascript */
         .editor-container {
             border: 1px solid rgba(255,255,255,0.05);
             border-radius: 8px;
@@ -509,20 +621,9 @@ INDEX_HTML = """
             background-color: #070a13;
         }
 
-        .editor-header {
-            background: #0f172a;
-            padding: 0.5rem 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
         .editor-textarea {
             width: 100%;
-            height: 150px;
+            height: 120px;
             background: transparent;
             border: none;
             color: #a78bfa;
@@ -539,20 +640,19 @@ INDEX_HTML = """
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.75rem;
             color: #10b981;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            min-height: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* Offer Letter display */
+        /* Document style Offer Letter */
         .offer-letter-doc {
             background-color: #fff;
             color: #111827;
-            padding: 3rem;
+            padding: 2.5rem;
             border-radius: 8px;
             font-family: 'Georgia', serif;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             line-height: 1.6;
-            position: relative;
+            margin-top: 1rem;
         }
 
         .offer-header {
@@ -560,26 +660,11 @@ INDEX_HTML = """
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid #6366f1;
-            padding-bottom: 1rem;
-            margin-bottom: 2rem;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
         }
 
-        .offer-body {
-            font-size: 0.9rem;
-        }
-
-        .offer-body p {
-            margin-bottom: 1.25rem;
-        }
-
-        .signature-box {
-            margin-top: 3rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        /* Recruiter Tab dashboard cards */
+        /* Recruiter Dashboard list metrics */
         .rec-metrics {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -617,210 +702,238 @@ INDEX_HTML = """
 
         .pipeline-table th {
             color: var(--text-muted);
-            font-weight: 500;
-            background-color: rgba(255,255,255,0.01);
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        .action-select {
+            background-color: #0b0f1e;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">ZECPATH AI PORTAL</div>
-        <div class="nav-tabs">
-            <button class="tab-btn active" id="tab-apply" onclick="switchTab('apply')">Apply Job</button>
-            <button class="tab-btn" id="tab-recruiter" onclick="switchTab('recruiter')">Recruiter Console</button>
+        <div class="logo">ZECPATH HIRING ENGINE</div>
+        <div class="user-status" id="user-status-container">
+            <span>Not Signed In</span>
         </div>
     </header>
 
     <main class="main-container">
-        <!-- TAB 1: JOB PORTAL APPLICANT -->
-        <div id="apply-tab" class="tab-content active">
-            <div class="portal-grid">
-                <!-- Left panel: Application Form -->
-                <aside class="card-panel">
-                    <div class="section-title">
-                        <span>Candidate Application</span>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="job-select">Select Job Role</label>
-                        <select id="job-select" class="form-select" onchange="loadJobRequirement()">
-                            <option value="mern">MERN Stack Developer (Technical)</option>
-                            <option value="sales">Sales Executive (Non-Technical)</option>
-                            <option value="uiux">UI/UX Designer (Creative)</option>
-                        </select>
+        <!-- AUTH LOGIN PAGE -->
+        <div id="auth-panel" class="auth-container">
+            <div class="card-panel">
+                <div class="section-title">
+                    <span id="auth-title">Sign In to Zecpath</span>
+                </div>
+                <div class="form-group">
+                    <label for="auth-email">Email Address</label>
+                    <input type="email" id="auth-email" class="form-input" placeholder="name@domain.com">
+                </div>
+                <div class="form-group">
+                    <label for="auth-pass">Password</label>
+                    <input type="password" id="auth-pass" class="form-input" placeholder="Password">
+                </div>
+                <div class="form-group">
+                    <label for="auth-type">Account Type</label>
+                    <select id="auth-type" class="form-select">
+                        <option value="candidate">Job Candidate / Applicant</option>
+                        <option value="recruiter">Recruiter / Employer HR</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
+                    <button class="btn-action" onclick="handleAuthSubmit()">Login</button>
+                    <button class="btn-action" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);" onclick="handleAuthRegister()">Register (First Time)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CANDIDATE VIEW BOARD -->
+        <div id="candidate-panel" style="display: none;">
+            <div class="layout-grid">
+                <!-- Sidebar candidate details -->
+                <aside>
+                    <!-- Profile Card -->
+                    <div class="card-panel">
+                        <div class="section-title">
+                            <span>My Profile CV</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="prof-name">Full Name</label>
+                            <input type="text" id="prof-name" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="prof-skills">Skills (comma-separated)</label>
+                            <input type="text" id="prof-skills" class="form-input" placeholder="react, node.js, express">
+                        </div>
+                        <div class="form-group">
+                            <label for="prof-exp">Experience (Years)</label>
+                            <input type="number" id="prof-exp" class="form-input" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="prof-resume">Resume CV Content</label>
+                            <textarea id="prof-resume" class="form-textarea" placeholder="Paste qualifications experience details..."></textarea>
+                        </div>
+                        <button class="btn-action" style="width: 100%;" onclick="saveCandidateProfile()">Save Profile</button>
                     </div>
 
-                    <div class="form-group">
-                        <label>Resume Upload (.PDF / .TXT)</label>
-                        <div class="file-upload-wrapper">
-                            <span id="file-upload-title" style="font-size: 0.85rem; color: var(--text-muted);">Choose resume file or click drag</span>
-                            <input type="file" id="resume-file" class="file-input" onchange="handleFileSelected()">
-                            <div class="file-name-label" id="file-name-label">File ready</div>
+                    <!-- Mail inbox notifications -->
+                    <div class="card-panel">
+                        <div class="section-title">
+                            <span>Job Inbox Mail Notifications <span class="notifications-badge" id="notif-count">0</span></span>
+                        </div>
+                        <div id="notif-list-container">
+                            <!-- Injected Notifications -->
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="preset-resume-select">Or Paste Resume Text / Choose Preset</label>
-                        <select id="preset-resume-select" class="form-select" onchange="loadPresetResumeText()">
-                            <option value="">-- Choose Preset Text --</option>
-                            <option value="strong_mern">Arjun Nair (Strong MERN Profile)</option>
-                            <option value="average_mern">Rahul Kumar (Average MERN Profile)</option>
-                            <option value="sales_exec">Suresh Menan (Sales Executive Profile)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="resume-text">Resume Raw Content</label>
-                        <textarea id="resume-text" class="form-textarea" placeholder="Paste resume skills and experience text blocks..."></textarea>
-                    </div>
-
-                    <button class="btn-action" onclick="submitApplication()">Submit Job Application</button>
                 </aside>
 
-                <!-- Right workspace: Pipeline Stepper -->
+                <!-- Center workspace jobs & flows -->
                 <section class="workspace-area">
-                    <div class="stepper-row">
-                        <div class="step" id="step-1">
-                            <div class="step-num">1</div>
-                            <div class="step-label">ATS Check</div>
+                    <!-- Browse Jobs Feed -->
+                    <div class="card-panel" id="candidate-jobs-feed-panel">
+                        <div class="section-title">
+                            <span>Browse Job Openings</span>
                         </div>
-                        <div class="step" id="step-2">
-                            <div class="step-num">2</div>
-                            <div class="step-label">Voice Screening</div>
-                        </div>
-                        <div class="step" id="step-3">
-                            <div class="step-num">3</div>
-                            <div class="step-label">Skills Assessment</div>
-                        </div>
-                        <div class="step" id="step-4">
-                            <div class="step-num">4</div>
-                            <div class="step-label">HR Negotiation</div>
-                        </div>
-                        <div class="step" id="step-5">
-                            <div class="step-num">5</div>
-                            <div class="step-label">Offer Dispatch</div>
+                        <div class="job-feed" id="job-feed-list">
+                            <!-- Injected jobs cards -->
                         </div>
                     </div>
 
-                    <!-- WORKSPACE 1: ATS SCORE RESULT -->
-                    <div class="workspace-panel" id="panel-ats">
-                        <div class="section-title">
-                            <span>Stage 1: AI ATS Screening Analytics</span>
+                    <!-- Flow workspace application run -->
+                    <div id="candidate-pipeline-workspace" style="display: none;">
+                        <div class="stepper-row">
+                            <div class="step" id="step-1"><div class="step-num">1</div><div class="step-label">ATS Check</div></div>
+                            <div class="step" id="step-2"><div class="step-num">2</div><div class="step-label">Voice call</div></div>
+                            <div class="step" id="step-3"><div class="step-num">3</div><div class="step-label">Assessment</div></div>
+                            <div class="step" id="step-4"><div class="step-num">4</div><div class="step-label">Negotiation</div></div>
+                            <div class="step" id="step-5"><div class="step-num">5</div><div class="step-label">Offer Sign</div></div>
                         </div>
-                        <div class="ats-results">
-                            <div class="circle-gauge" id="ats-gauge">
-                                <span style="font-size: 2rem; font-weight: 700;" id="ats-score-output">0%</span>
-                                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">ATS Score</span>
-                            </div>
-                            <div>
-                                <h3 style="margin-bottom: 0.5rem;" id="ats-verdict">Evaluating Candidate Job Match...</h3>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">The system parsed candidate requirements against job specs.</p>
-                                
-                                <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted);">Extracted Skills</h4>
-                                <div class="skills-container" id="ats-skills-badge">
-                                    <!-- Badges -->
+
+                        <!-- Panel 1: Apply Info form -->
+                        <div class="workspace-panel active" id="panel-apply-details">
+                            <div class="card-panel">
+                                <div class="section-title">
+                                    <span id="apply-job-header">Apply for Job Position</span>
                                 </div>
-                                <button class="btn-action" id="btn-to-screening" style="margin-top: 1.5rem; width: auto; padding: 0.6rem 1.5rem; display: none;" onclick="goToVoiceScreening()">Proceed to Voice Screening Call</button>
+                                <div class="form-group">
+                                    <label for="app-contact">Contact Details</label>
+                                    <input type="text" id="app-contact" class="form-input" placeholder="+1-555-0199">
+                                </div>
+                                <div class="scores-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+                                    <div>
+                                        <label for="app-gender" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Gender</label>
+                                        <select id="app-gender" class="form-select">
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="app-location" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Location</label>
+                                        <input type="text" id="app-location" class="form-input" placeholder="New York, USA">
+                                    </div>
+                                </div>
+                                <div class="scores-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+                                    <div>
+                                        <label for="app-notice" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Notice Period</label>
+                                        <input type="text" id="app-notice" class="form-input" placeholder="30 days">
+                                    </div>
+                                    <div>
+                                        <label for="app-salary" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Expected Salary (USD / Yr)</label>
+                                        <input type="number" id="app-salary" class="form-input" value="90000">
+                                    </div>
+                                </div>
+                                <button class="btn-action" onclick="submitAtsApplication()">Trigger ATS Analysis & Apply</button>
+                                <button class="btn-action" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); margin-left: 0.5rem;" onclick="cancelApplicationFlow()">Back to Job Board</button>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- WORKSPACE 2: VOICE SCREENING CALL -->
-                    <div class="workspace-panel" id="panel-voice">
-                        <div class="section-title">
-                            <span>Stage 2: Outbound AI voice Screening Call</span>
-                        </div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">A natural sounding AI bot is conducting the call to verify details.</p>
-                        
-                        <div class="call-card">
-                            <div class="call-header">
-                                <div style="font-weight: 600;" id="call-status">Call Status: Connected</div>
-                                <div class="voice-wave">
-                                    <div class="voice-bar"></div>
-                                    <div class="voice-bar"></div>
-                                    <div class="voice-bar"></div>
-                                    <div class="voice-bar"></div>
+                        <!-- Panel 2: Voice Interview screen -->
+                        <div class="workspace-panel" id="panel-voice-screen">
+                            <div class="card-panel">
+                                <div class="section-title">
+                                    <span>AI HR voice Screening Interview Call</span>
+                                </div>
+                                <div class="call-card">
+                                    <div class="dialogue-stream" id="screening-chat-stream">
+                                        <!-- Bubbles -->
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                        <input type="text" id="screening-chat-input" class="form-input" placeholder="Type your response to the HR voice questions..." onkeypress="handleScreeningEnter(event)">
+                                        <button class="btn-action" onclick="submitScreeningAnswer()">Answer</button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="dialogue-stream" id="voice-stream">
-                                <!-- Dialogues -->
-                            </div>
-                            
-                            <!-- Voice Input Box -->
-                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                                <input type="text" id="voice-input" class="form-input" placeholder="Speak/Type your answer here..." onkeypress="handleVoiceEnter(event)">
-                                <button class="btn-action" style="width: 80px;" onclick="submitVoiceResponse()">Speak</button>
-                            </div>
                         </div>
-                    </div>
 
-                    <!-- WORKSPACE 3: ASSESSMENT ROUND (Role Specific) -->
-                    <div class="workspace-panel" id="panel-assessment">
-                        <div class="section-title">
-                            <span>Stage 3: Candidate Competency & Code Sandbox Assessment</span>
-                        </div>
-                        
-                        <div id="assessment-container">
-                            <!-- Injected by job applied role -->
-                        </div>
-                    </div>
-
-                    <!-- WORKSPACE 4: SALARY NEGOTIATION -->
-                    <div class="workspace-panel" id="panel-negotiation">
-                        <div class="section-title">
-                            <span>Stage 4: Autonomous HR interview & Salary Negotiation</span>
-                        </div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">HR Bot will align expectations with company budget models.</p>
-                        
-                        <div class="call-card">
-                            <div class="dialogue-stream" id="negotiation-stream">
-                                <!-- Dialogue counter offers -->
-                            </div>
-                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                                <input type="number" id="negotiation-input" class="form-input" placeholder="Enter expected annual salary in USD (e.g. 95000)">
-                                <button class="btn-action" style="width: 140px;" onclick="submitNegotiationResponse()">Counter Offer</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- WORKSPACE 5: FINAL OFFER LETTER -->
-                    <div class="workspace-panel" id="panel-offer">
-                        <div class="section-title">
-                            <span>Stage 5: Automated Offer Letter dispatch</span>
-                        </div>
-                        
-                        <div class="offer-letter-doc">
-                            <div class="offer-header">
-                                <div>
-                                    <h2 style="color: #6366f1; font-weight: 700;">ZECPATH AI PORTAL</h2>
-                                    <span style="font-size: 0.75rem; color: #6b7280; font-family: sans-serif;">HR DEPT - DECENTRALIZED RECRUITMENT</span>
+                        <!-- Panel 3: Sandbox/Aptitude Assessment -->
+                        <div class="workspace-panel" id="panel-skills-test">
+                            <div class="card-panel">
+                                <div class="section-title">
+                                    <span>AI Competency Sandbox Assessment</span>
                                 </div>
-                                <span style="font-size: 0.85rem; color: #4b5563; font-family: sans-serif;">OFFER CONFIRMED</span>
-                            </div>
-                            
-                            <div class="offer-body">
-                                <p><strong>Date:</strong> <span id="offer-date">July 14, 2026</span></p>
-                                <p><strong>To,</strong> <br><span id="offer-name">John Doe</span></p>
-                                
-                                <p>We are delighted to offer you the position of <strong><span id="offer-role">MERN Developer</span></strong> at Zecpath. Based on your outstanding evaluation score matching our core hiring pipeline criteria, we are pleased to confirm the following terms of employment:</p>
-                                
-                                <p><strong>Base Compensation:</strong> $<span id="offer-salary">0.00</span> USD per annum.</p>
-                                <p><strong>Joining Date:</strong> August 1st, 2026.</p>
-                                <p><strong>Key Duties:</strong> Backend microservices engineering, system optimization models, and AI observability logic.</p>
-                                
-                                <p>Please confirm your acceptance of this automated offer by signing below.</p>
-                            </div>
-                            
-                            <div class="signature-box">
-                                <div>
-                                    <div style="font-size: 0.8rem; font-weight: 600; color: #4b5563;">Hiring Authority</div>
-                                    <div style="font-family: cursive; font-size: 1.2rem; color: #6366f1; margin: 0.35rem 0;">Zecpath HR Bot</div>
-                                    <div style="border-top: 1px solid #d1d5db; width: 150px;"></div>
+                                <div id="dynamic-assessment-content">
+                                    <!-- Dynamic elements injected -->
                                 </div>
-                                <div>
-                                    <div style="font-size: 0.8rem; font-weight: 600; color: #4b5563;">Candidate Signature</div>
-                                    <div style="font-family: cursive; font-size: 1.2rem; color: #4b5563; margin: 0.35rem 0; cursor: pointer;" onclick="signOfferLetter()">Click to E-Sign</div>
-                                    <div style="border-top: 1px solid #d1d5db; width: 150px;" id="signature-line"></div>
+                            </div>
+                        </div>
+
+                        <!-- Panel 4: Counter offers Salary Negotiation -->
+                        <div class="workspace-panel" id="panel-salary-negotiate">
+                            <div class="card-panel">
+                                <div class="section-title">
+                                    <span>Salary Negotiation & HR Offer Finalization</span>
+                                </div>
+                                <div class="call-card">
+                                    <div class="dialogue-stream" id="negotiate-chat-stream">
+                                        <!-- Bubbles -->
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                        <input type="number" id="negotiate-chat-input" class="form-input" placeholder="Enter annual counter salary USD (e.g. 100000)">
+                                        <button class="btn-action" onclick="submitCounterSalary()">Counter Offer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel 5: Sign Offer Letter PDF -->
+                        <div class="workspace-panel" id="panel-offer-document">
+                            <div class="card-panel">
+                                <div class="section-title">
+                                    <span>Review & Sign Employment Contract</span>
+                                </div>
+                                <div class="offer-letter-doc">
+                                    <div class="offer-header">
+                                        <div>
+                                            <h2 style="color: #6366f1; font-weight: 700;">ZECPATH CORPORATION</h2>
+                                            <span style="font-size: 0.75rem; color: #6b7280;">AUTONOMOUS AI CONTRACT DESK</span>
+                                        </div>
+                                        <span style="font-size: 0.85rem; color: #4b5563; font-weight: 600;">CONTRACT DISPATCHED</span>
+                                    </div>
+                                    <div class="offer-body">
+                                        <p><strong>Position:</strong> <span id="lbl-offer-role">Developer</span></p>
+                                        <p><strong>Base Compensation Package:</strong> $<span id="lbl-offer-salary">0.00</span> USD per annum.</p>
+                                        <p>This automated job offer has been generated based on your scores in the Zecpath AI evaluation pipeline. Both your technical sandbox rating and HR parameters verified selection standards.</p>
+                                    </div>
+                                    <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                                        <div>
+                                            <div style="font-size: 0.8rem; color: #6b7280;">Hiring Authority</div>
+                                            <div style="font-family: cursive; font-size: 1.1rem; color: #6366f1;">Zecpath Auto-Sign</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.8rem; color: #6b7280;">Candidate Sign-off</div>
+                                            <div id="lbl-esign" style="font-family: cursive; font-size: 1.1rem; color: #10b981; cursor: pointer;" onclick="executeContractSign()">Click to Accept & E-Sign</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                    <button class="btn-action" style="background-color: var(--color-danger); background-image: none;" onclick="rejectOfferContract()">Reject Contract Offer</button>
                                 </div>
                             </div>
                         </div>
@@ -829,40 +942,82 @@ INDEX_HTML = """
             </div>
         </div>
 
-        <!-- TAB 2: RECRUITER CONSOLE -->
-        <div id="recruiter-tab" class="tab-content">
+        <!-- RECRUITER VIEW BOARD -->
+        <div id="recruiter-panel" style="display: none;">
             <div class="rec-metrics">
                 <div class="rec-metric-card">
-                    <div style="font-size: 0.8rem; color: var(--text-muted)">Evaluations Ingested</div>
-                    <div class="rec-metric-val" id="rec-total-runs">0</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted)">Hiring Candidates Ingested</div>
+                    <div class="rec-metric-val" id="rec-total-applicants">0</div>
                 </div>
                 <div class="rec-metric-card">
-                    <div style="font-size: 0.8rem; color: var(--text-muted)">Average ATS score</div>
-                    <div class="rec-metric-val" id="rec-avg-ats">0%</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted)">Selected Candidates</div>
+                    <div class="rec-metric-val" id="rec-total-selected">0</div>
                 </div>
                 <div class="rec-metric-card">
-                    <div style="font-size: 0.8rem; color: var(--text-muted)">Hiring Conversion Rate</div>
-                    <div class="rec-metric-val">100%</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted)">Active Jobs Posted</div>
+                    <div class="rec-metric-val" id="rec-active-jobs">3</div>
                 </div>
             </div>
 
+            <!-- Post a New Job -->
             <div class="card-panel">
                 <div class="section-title">
-                    <span>Recruiter Candidate Tracking Pipeline</span>
+                    <span>Post Job Listing</span>
+                </div>
+                <div class="scores-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                    <div class="form-group">
+                        <label for="job-title">Job Title</label>
+                        <input type="text" id="job-title" class="form-input" placeholder="e.g. Node Developer">
+                    </div>
+                    <div class="form-group">
+                        <label for="job-skills">Required Skills (comma-separated)</label>
+                        <input type="text" id="job-skills" class="form-input" placeholder="react, node.js">
+                    </div>
+                    <div class="form-group">
+                        <label for="job-assess">Assessment Type</label>
+                        <select id="job-assess" class="form-select">
+                            <option value="coding">Coding Challenge</option>
+                            <option value="aptitude">Aptitude Test</option>
+                            <option value="design_quiz">Design Theory Quiz</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="scores-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                    <div class="form-group">
+                        <label for="job-desc">Job Description Text</label>
+                        <input type="text" id="job-desc" class="form-input" placeholder="Brief details about the role...">
+                    </div>
+                    <div class="form-group">
+                        <label for="job-budget-min">Salary Budget Min ($)</label>
+                        <input type="number" id="job-budget-min" class="form-input" value="60000">
+                    </div>
+                    <div class="form-group">
+                        <label for="job-budget-max">Salary Budget Max ($)</label>
+                        <input type="number" id="job-budget-max" class="form-input" value="90000">
+                    </div>
+                </div>
+                <button class="btn-action" onclick="submitRecruiterJobPost()">Post Job Requirement</button>
+            </div>
+
+            <!-- Candidate Tracking pipeline table -->
+            <div class="card-panel">
+                <div class="section-title">
+                    <span>Hiring Funnel Candidate Dashboard</span>
                 </div>
                 <table class="pipeline-table">
                     <thead>
                         <tr>
-                            <th>Candidate ID</th>
-                            <th>Job Applied</th>
-                            <th>ATS Score</th>
-                            <th>Screening</th>
-                            <th>Decision Recommendation</th>
-                            <th>Offer Dispatched</th>
+                            <th>Candidate</th>
+                            <th>Role Applied</th>
+                            <th>ATS Match</th>
+                            <th>Voice Score</th>
+                            <th>Assessment</th>
+                            <th>Recruiter Recommendation</th>
+                            <th>Recruiter Override Action</th>
                         </tr>
                     </thead>
-                    <tbody id="recruiter-pipeline-rows">
-                        <!-- Table Rows -->
+                    <tbody id="recruiter-table-body">
+                        <!-- Injected rows -->
                     </tbody>
                 </table>
             </div>
@@ -870,143 +1025,323 @@ INDEX_HTML = """
     </main>
 
     <script>
-        const PRESET_RESUMES = {
-            strong_mern: "Arjun Nair has over 3 years of experience as a MERN Stack Developer. Arjun is expert in building APIs using react, node.js, express, and mongodb database modeling. Skilled in Javascript coding and system optimizations.",
-            average_mern: "Rahul Kumar has 2 years of software engineering experience. Skilled in html, css, flask, and basics of react and node.js. Familar with Javascript and databases.",
-            sales_exec: "Suresh Menan is an experienced Sales Executive with 4 years in lead generation and negotiation. Suresh is skilled in cold calling, communication, and managing sales CRM workflows."
+        let currentUserId = null;
+        let currentUserEmail = "";
+        let currentUserName = "";
+        let currentUserType = "";
+        
+        let candidateProfile = {
+            skills: "",
+            experience: 0,
+            resume_text: ""
         };
 
-        let currentRoleKey = 'mern';
-        let currentCandidate = {
-            id: '',
-            name: '',
-            ats_score: 0,
-            skills: [],
-            screening_questions_idx: 0,
-            expected_salary: 0,
-            negotiation_attempts: 0
-        };
+        let selectedJob = null;
+        let activeApplication = null;
 
-        let recruiterData = [];
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(`${tabId}-tab`).classList.add('active');
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-        }
-
-        function loadJobRequirement() {
-            currentRoleKey = document.getElementById('job-select').value;
-        }
-
-        function handleFileSelected() {
-            const fileInput = document.getElementById('resume-file');
-            const fileLabel = document.getElementById('file-name-label');
-            const fileTitle = document.getElementById('file-upload-title');
-            
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                fileTitle.innerText = "Selected Resume File:";
-                fileLabel.innerText = file.name;
-                fileLabel.style.display = "block";
-                
-                // Simulate reading text from file
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('resume-text').value = e.target.result;
-                };
-                reader.readAsText(file);
+        function updateHeaderUI() {
+            const container = document.getElementById('user-status-container');
+            if (currentUserId) {
+                container.innerHTML = `
+                    <span>Logged in as: <strong>${currentUserEmail}</strong> (${currentUserType})</span>
+                    <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
+                `;
+            } else {
+                container.innerHTML = `<span>Not Signed In</span>`;
             }
         }
 
-        function loadPresetResumeText() {
-            const key = document.getElementById('preset-resume-select').value;
-            if (key) {
-                document.getElementById('resume-text').value = PRESET_RESUMES[key];
-            }
-        }
+        // AUTH & ONBOARDING ACTIONS
+        async function handleAuthSubmit() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-pass').value;
+            const type = document.getElementById('auth-type').value;
 
-        async function submitApplication() {
-            const role = document.getElementById('job-select').value;
-            const text = document.getElementById('resume-text').value;
-            
-            if (!text.trim()) {
-                alert("Please upload a file or paste resume text!");
+            if (!email || !password) {
+                alert("Please input login credentials!");
                 return;
             }
 
-            // Reset stepper and tabs
-            document.querySelectorAll('.step').forEach(s => s.className = 'step');
-            document.querySelectorAll('.workspace-panel').forEach(p => p.classList.remove('active'));
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, user_type: type })
+                });
+                
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert(err.detail || "Authentication Failed!");
+                    return;
+                }
+                
+                const data = await response.json();
+                currentUserId = data.user_id;
+                currentUserEmail = data.email;
+                currentUserName = data.name || "";
+                currentUserType = type;
 
-            document.getElementById('step-1').classList.add('active');
-            document.getElementById('panel-ats').classList.add('active');
+                document.getElementById('auth-panel').style.display = 'none';
+                updateHeaderUI();
+
+                if (type === 'candidate') {
+                    document.getElementById('candidate-panel').style.display = 'block';
+                    loadCandidateProfileData();
+                    loadJobFeedList();
+                    loadCandidateNotifications();
+                } else {
+                    document.getElementById('recruiter-panel').style.display = 'block';
+                    loadRecruiterDashboard();
+                }
+            } catch (err) {
+                alert("Auth Error: " + err);
+            }
+        }
+
+        async function handleAuthRegister() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-pass').value;
+            const type = document.getElementById('auth-type').value;
+
+            if (!email || !password) {
+                alert("Please input credentials!");
+                return;
+            }
+
+            const nameInput = prompt("Please enter your name:");
+            if (!nameInput) return;
 
             try {
-                // Submit application to parse
-                const formData = new FormData();
-                formData.append("role_key", role);
-                formData.append("resume_text", text);
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: nameInput, email, password, user_type: type })
+                });
                 
+                if (response.ok) {
+                    alert("Registration successful! Please login.");
+                } else {
+                    const err = await response.json();
+                    alert(err.detail || "Registration failed!");
+                }
+            } catch (err) {
+                alert("Registration Error: " + err);
+            }
+        }
+
+        function handleLogout() {
+            currentUserId = null;
+            currentUserEmail = "";
+            currentUserType = "";
+            document.getElementById('candidate-panel').style.display = 'none';
+            document.getElementById('recruiter-panel').style.display = 'none';
+            document.getElementById('auth-panel').style.display = 'block';
+            updateHeaderUI();
+        }
+
+        // PROFILE ONBOARDING
+        async function loadCandidateProfileData() {
+            try {
+                const res = await fetch(`/api/candidates/profile/${currentUserId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data) {
+                        document.getElementById('prof-name').value = data.name || "";
+                        document.getElementById('prof-skills').value = data.skills || "";
+                        document.getElementById('prof-exp').value = data.experience || 0;
+                        document.getElementById('prof-resume').value = data.resume_text || "";
+                        
+                        candidateProfile.skills = data.skills || "";
+                        candidateProfile.experience = data.experience || 0;
+                        candidateProfile.resume_text = data.resume_text || "";
+                    }
+                }
+            } catch (err) {
+                console.log("Error loading profile: " + err);
+            }
+        }
+
+        async function saveCandidateProfile() {
+            const name = document.getElementById('prof-name').value;
+            const skills = document.getElementById('prof-skills').value;
+            const exp = parseInt(document.getElementById('prof-exp').value);
+            const resume = document.getElementById('prof-resume').value;
+
+            try {
+                const response = await fetch('/api/candidates/profile/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        candidate_id: currentUserId,
+                        name, contact_info: "", gender: "", location: "",
+                        notice_period: "", expected_salary: 0, skills, experience: exp, resume_text: resume
+                    })
+                });
+                if (response.ok) {
+                    alert("Profile CV Saved successfully!");
+                    candidateProfile.skills = skills;
+                    candidateProfile.experience = exp;
+                    candidateProfile.resume_text = resume;
+                    loadJobFeedList(); # Reload match scores
+                }
+            } catch (err) {
+                alert("Save Profile Error: " + err);
+            }
+        }
+
+        // BROWSE JOB LISTINGS
+        async function loadJobFeedList() {
+            try {
+                const response = await fetch('/api/jobs/list');
+                const jobs = await response.json();
+                
+                const feed = document.getElementById('job-feed-list');
+                feed.innerHTML = '';
+                
+                jobs.forEach(j => {
+                    // Match score evaluation logic
+                    let matchScore = 40;
+                    let matchClass = 'match-low';
+                    let matchLabel = 'Low Match';
+
+                    if (candidateProfile.skills) {
+                        const required = j.skills_required.toLowerCase().split(',');
+                        const owned = candidateProfile.skills.toLowerCase().split(',');
+                        
+                        let matchedCount = 0;
+                        required.forEach(s => {
+                            if (owned.some(o => o.trim() === s.trim())) {
+                                matchedCount++;
+                            }
+                        });
+
+                        const ratio = required.length > 0 ? (matchedCount / required.length) : 0;
+                        if (ratio >= 0.8) {
+                            matchScore = 90;
+                            matchClass = 'match-strong';
+                            matchLabel = 'Strong Match';
+                        } else if (ratio >= 0.5) {
+                            matchScore = 75;
+                            matchClass = 'match-good';
+                            matchLabel = 'Good Match';
+                        }
+                    }
+
+                    feed.innerHTML += `
+                        <div class="job-card">
+                            <div class="job-info">
+                                <h3>${j.title}</h3>
+                                <p style="font-weight: 500; color: #818cf8; margin-bottom: 0.25rem;">Company: ${j.company_name}</p>
+                                <p>${j.description}</p>
+                                <div class="match-badge ${matchClass}">🟢 ${matchLabel} (${matchScore}%)</div>
+                            </div>
+                            <button class="btn-action" onclick="openApplicationFlow(${JSON.stringify(j).replace(/"/g, '&quot;')})">Apply Now</button>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.log("Error loading jobs: " + err);
+            }
+        }
+
+        // CANDIDATE APPLY FLOW PROGRESSION
+        function openApplicationFlow(jobObj) {
+            selectedJob = jobObj;
+            document.getElementById('candidate-jobs-feed-panel').style.display = 'none';
+            document.getElementById('candidate-pipeline-workspace').style.display = 'block';
+            document.getElementById('apply-job-header').innerText = `Apply for: ${jobObj.title} at ${jobObj.company_name}`;
+            
+            // Reset Stepper
+            document.querySelectorAll('.step').forEach(s => s.className = 'step');
+            document.querySelectorAll('.workspace-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('step-1').classList.add('active');
+            document.getElementById('panel-apply-details').classList.add('active');
+        }
+
+        function cancelApplicationFlow() {
+            document.getElementById('candidate-pipeline-workspace').style.display = 'none';
+            document.getElementById('candidate-jobs-feed-panel').style.display = 'block';
+        }
+
+        async function submitAtsApplication() {
+            const contact = document.getElementById('app-contact').value;
+            const gender = document.getElementById('app-gender').value;
+            const location = document.getElementById('app-location').value;
+            const notice = document.getElementById('app-notice').value;
+            const salary = parseInt(document.getElementById('app-salary').value);
+
+            if (!contact || !location || !notice) {
+                alert("Please fill application fields!");
+                return;
+            }
+
+            try {
                 const response = await fetch('/api/apply', {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        candidate_id: currentUserId,
+                        job_id: selectedJob.id,
+                        name: document.getElementById('prof-name').value || "Guest",
+                        contact_info: contact,
+                        gender, location, notice_period: notice, expected_salary: salary,
+                        experience: parseInt(document.getElementById('prof-exp').value),
+                        resume_text: candidateProfile.resume_text
+                    })
                 });
-                const result = await response.json();
+
+                const appObj = await response.json();
+                activeApplication = appObj;
                 
-                currentCandidate.id = result.candidate_id;
-                currentCandidate.name = result.name;
-                currentCandidate.ats_score = result.ats_score;
-                currentCandidate.skills = result.skills;
-                currentCandidate.screening_questions_idx = 0;
-                currentCandidate.negotiation_attempts = 0;
+                // Show ATS result
+                document.getElementById('panel-apply-details').classList.remove('active');
+                document.getElementById('panel-ats').classList.add('active');
                 
-                // Update ATS Panel
-                document.getElementById('ats-score-output').innerText = Math.round(result.ats_score) + '%';
-                document.getElementById('ats-gauge').style.background = `radial-gradient(circle, var(--bg-panel) 55%, transparent 60%), conic-gradient(var(--color-primary) ${result.ats_score}%, rgba(255,255,255,0.05) ${result.ats_score}%)`;
+                document.getElementById('ats-score-output').innerText = Math.round(appObj.ats_score) + '%';
+                document.getElementById('ats-gauge').style.background = `radial-gradient(circle, var(--bg-panel) 55%, transparent 60%), conic-gradient(var(--color-primary) ${appObj.ats_score}%, rgba(255,255,255,0.05) ${appObj.ats_score}%)`;
                 
                 const verdict = document.getElementById('ats-verdict');
                 const btnScreening = document.getElementById('btn-to-screening');
                 const skillsBadge = document.getElementById('ats-skills-badge');
                 
                 skillsBadge.innerHTML = '';
-                result.skills.forEach(s => {
-                    skillsBadge.innerHTML += `<span class="skill-badge">${s}</span>`;
+                const skillsList = candidateProfile.skills.split(',');
+                skillsList.forEach(s => {
+                    if (s.trim()) {
+                        skillsBadge.innerHTML += `<span class="skill-badge">${s.trim()}</span>`;
+                    }
                 });
 
-                if (result.ats_score >= 60) {
-                    verdict.innerText = "Congratulations! ATS Shortlisted Successfully";
+                if (appObj.ats_score >= 60) {
+                    verdict.innerText = "Shortlisted! Check inbox for AI interview link.";
                     verdict.style.color = "var(--color-success)";
                     btnScreening.style.display = "inline-block";
                     document.getElementById('step-1').className = 'step completed';
+                    loadCandidateNotifications(); # update mail
                 } else {
-                    verdict.innerText = "Application Rejected: Score below hiring threshold.";
+                    verdict.innerText = "Application Rejected: Score below threshold.";
                     verdict.style.color = "var(--color-danger)";
                     btnScreening.style.display = "none";
                 }
             } catch (err) {
-                alert("ATS Error: " + err);
+                alert("Apply Error: " + err);
             }
         }
 
-        // STAGE 2: VOICE SCREENING
+        // STAGE 2: VOICE SCREENING FLOW
         function goToVoiceScreening() {
             document.getElementById('panel-ats').classList.remove('active');
-            document.getElementById('panel-voice').classList.add('active');
+            document.getElementById('panel-voice-screen').classList.add('active');
             document.getElementById('step-2').classList.add('active');
             
-            // Start voice bot question loop
-            const stream = document.getElementById('voice-stream');
+            const stream = document.getElementById('screening-chat-stream');
             stream.innerHTML = '';
             
-            const intro = `Hello ${currentCandidate.name}. I am the Zecpath AI voice screening bot. Let's start. Please introduce yourself and highlight your experience.`;
-            appendBubble(intro, 'ai');
+            appendScreeningBubble(`Hello. Welcome to Zecpath AI voice screening. Let's verify experience and parameters. Please introduce yourself briefly.`, 'ai');
         }
 
-        function appendBubble(text, speaker) {
-            const stream = document.getElementById('voice-stream');
+        function appendScreeningBubble(text, speaker) {
+            const stream = document.getElementById('screening-chat-stream');
             const bubble = document.createElement('div');
             bubble.className = `bubble ${speaker}`;
             bubble.innerText = text;
@@ -1014,165 +1349,167 @@ INDEX_HTML = """
             stream.scrollTop = stream.scrollHeight;
         }
 
-        const SCREENING_QUESTIONS = [
-            "What is your expected salary per annum in USD?",
-            "What is your current location and notice period?"
+        const SCREENING_QS = [
+            "What notice period do you require to join?",
+            "What is your expected annual compensation package?"
         ];
+        let currentScreenIndex = 0;
+        let screeningTranscript = "";
 
-        function handleVoiceEnter(event) {
+        function handleScreeningEnter(event) {
             if (event.key === 'Enter') {
-                submitVoiceResponse();
+                submitScreeningAnswer();
             }
         }
 
-        function submitVoiceResponse() {
-            const input = document.getElementById('voice-input');
+        function submitScreeningAnswer() {
+            const input = document.getElementById('screening-chat-input');
             const text = input.value.trim();
             if (!text) return;
             
-            appendBubble(text, 'user');
+            appendScreeningBubble(text, 'user');
+            screeningTranscript += `\nUser: ${text}`;
             input.value = '';
-            
-            // Check expected salary extraction from user chat bubble
-            if (currentCandidate.screening_questions_idx === 0) {
-                const match = text.match(/\\d+/);
-                if (match) {
-                    currentCandidate.expected_salary = parseFloat(match[0]);
-                } else {
-                    currentCandidate.expected_salary = 90000; # default counter
-                }
-            }
 
-            setTimeout(() => {
-                if (currentCandidate.screening_questions_idx < SCREENING_QUESTIONS.length) {
-                    const nextQ = SCREENING_QUESTIONS[currentCandidate.screening_questions_idx];
-                    appendBubble(nextQ, 'ai');
-                    currentCandidate.screening_questions_idx++;
+            setTimeout(async () => {
+                if (currentScreenIndex < SCREENING_QS.length) {
+                    const nextQ = SCREENING_QS[currentScreenIndex];
+                    appendScreeningBubble(nextQ, 'ai');
+                    screeningTranscript += `\nAI: ${nextQ}`;
+                    currentScreenIndex++;
                 } else {
-                    appendBubble("Thank you! Voice screening completed. We are loading your round 3 competency assessment...", 'ai');
+                    appendScreeningBubble("Voice screening finished. Evaluating transcript scores...", 'ai');
                     document.getElementById('step-2').className = 'step completed';
                     
-                    setTimeout(() => {
-                        loadAssessmentStage();
-                    }, 1500);
+                    // submit screening to backend
+                    const response = await fetch('/api/applications/screening/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            application_id: activeApplication.id,
+                            screening_score: 85.0, # default passing score
+                            transcript: screeningTranscript
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        setTimeout(() => {
+                            loadCandidateNotifications(); # updates next round email
+                            loadAssessmentStage();
+                        }, 1500);
+                    }
                 }
             }, 1000);
         }
 
-        // STAGE 3: SKILLS ASSESSMENT
+        // STAGE 3: ASSESSMENT ROUND
         function loadAssessmentStage() {
-            document.getElementById('panel-voice').classList.remove('active');
-            document.getElementById('panel-assessment').classList.add('active');
+            document.getElementById('panel-voice-screen').classList.remove('active');
+            document.getElementById('panel-skills-test').classList.add('active');
             document.getElementById('step-3').classList.add('active');
             
-            const container = document.getElementById('assessment-container');
+            const container = document.getElementById('dynamic-assessment-content');
             container.innerHTML = '';
             
-            if (currentRoleKey === 'mern') {
+            if (selectedJob.assessment_type === 'coding') {
                 container.innerHTML = `
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Complete the programming challenge in the JavaScript sandbox:</p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Complete the coding sandbox challenge:</p>
                     <div class="editor-container">
-                        <div class="editor-header">
-                            <span>Javascript sandbox editor (isPalindrome)</span>
-                            <span>main.js</span>
-                        </div>
-                        <textarea class="editor-textarea" id="editor-code">function isPalindrome(str) {\\n  // Write code here\\n  return str.split('').reverse().join('') === str;\\n}</textarea>
-                        <div class="editor-terminal" id="terminal-out">Terminal: Ready to run tests.</div>
+                        <textarea class="editor-textarea" id="editor-sandbox-code">function reverseString(str) {\\n  // Write JS logic here\\n  return str.split('').reverse().join('');\\n}</textarea>
+                        <div class="editor-terminal" id="terminal-out-box">Terminal: Ready.</div>
                     </div>
-                    <button class="btn-action" style="margin-top: 1rem;" onclick="submitAssessment()">Submit & Compile Code</button>
-                `;
-            } else if (currentRoleKey === 'sales') {
-                container.innerHTML = `
-                    <p style="font-size: 0.9rem; margin-bottom: 1rem;">Answer the business scenario multiple-choice question:</p>
-                    <div class="form-group">
-                        <p style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.75rem;">Which strategy is best for handling a customer objection about price?</p>
-                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <label><input type="radio" name="aptitude" value="A"> A. Suggest discount instantly to close sales.</label>
-                            <label><input type="radio" name="aptitude" value="B"> B. Re-emphasize value and ROI matching business outcomes.</label>
-                            <label><input type="radio" name="aptitude" value="C"> C. Explain that pricing is fixed and cannot be changed.</label>
-                            <label><input type="radio" name="aptitude" value="D"> D. Recommend competitor alternatives.</label>
-                        </div>
-                    </div>
-                    <button class="btn-action" onclick="submitAssessment()">Submit Answer</button>
+                    <button class="btn-action" style="margin-top: 1rem;" onclick="evaluateCodingSandbox()">Compile Code Sandbox</button>
                 `;
             } else {
                 container.innerHTML = `
-                    <p style="font-size: 0.9rem; margin-bottom: 1rem;">Design theory assessment question:</p>
+                    <p style="font-size: 0.9rem; margin-bottom: 1rem;">Aptitude / Design scenario choice evaluation:</p>
                     <div class="form-group">
-                        <p style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.75rem;">What does usability heuristics rule 'Consistency and Standards' refer to?</p>
-                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <label><input type="radio" name="design" value="A"> A. Using unique layouts on every page.</label>
-                            <label><input type="radio" name="design" value="B"> B. Maintaining uniform platform controls and patterns.</label>
-                            <label><input type="radio" name="design" value="C"> C. Selecting bright primary colors.</label>
-                            <label><input type="radio" name="design" value="D"> D. Ensuring high security authentication.</label>
+                        <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Select the correct business standard decision:</p>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;">
+                            <label><input type="radio" name="apt-choice" value="A"> A. Propose discount instantly.</label>
+                            <label><input type="radio" name="apt-choice" value="B"> B. Emphasize value proposition and ROI alignment.</label>
+                            <label><input type="radio" name="apt-choice" value="C"> C. Fixed cost response.</label>
                         </div>
                     </div>
-                    <button class="btn-action" onclick="submitAssessment()">Submit Answer</button>
+                    <button class="btn-action" onclick="evaluateQuizChoice()">Submit Scenario Answer</button>
                 `;
             }
         }
 
-        async function submitAssessment() {
-            let code = "";
-            let choice = "";
-            
-            if (currentRoleKey === 'mern') {
-                code = document.getElementById('editor-code').value;
-                const term = document.getElementById('terminal-out');
-                term.innerText = "Compiling JavaScript in sandbox environment...";
-            } else {
-                const name = currentRoleKey === 'sales' ? 'aptitude' : 'design';
-                const checked = document.querySelector(`input[name="${name}"]:checked`);
-                if (!checked) {
-                    alert("Please select an answer!");
-                    return;
-                }
-                choice = checked.value;
-            }
+        async function evaluateCodingSandbox() {
+            const code = document.getElementById('editor-sandbox-code').value;
+            const terminal = document.getElementById('terminal-out-box');
+            terminal.innerText = "Sandbox: Compiling algorithm...";
 
             try {
                 const response = await fetch('/api/assessment/evaluate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        role_key: currentRoleKey,
-                        code_content: code,
-                        aptitude_answer: choice
+                        role_key: selectedJob.assessment_type,
+                        code_content: code
                     })
                 });
-                const result = await response.json();
                 
-                if (currentRoleKey === 'mern') {
-                    const term = document.getElementById('terminal-out');
-                    term.innerText = "Compilation details: " + result.message + " | Sandbox Score: " + result.score + "%";
-                }
-
-                currentCandidate.assessment_score = result.score;
-                document.getElementById('step-3').className = 'step completed';
-
-                setTimeout(() => {
-                    loadNegotiationStage();
-                }, 1500);
+                const result = await response.json();
+                terminal.innerText = `Output: ${result.message} | Score: ${result.score}%`;
+                
+                await saveAssessmentResult(result.score);
             } catch (err) {
-                alert("Assessment error: " + err);
+                alert("Sandbox compiler error: " + err);
+            }
+        }
+
+        async function evaluateQuizChoice() {
+            const checked = document.querySelector('input[name="apt-choice"]:checked');
+            if (!checked) {
+                alert("Please choose an answer!");
+                return;
+            }
+            const val = checked.value;
+            const score = val === "B" ? 100.0 : 0.0;
+            
+            await saveAssessmentResult(score);
+        }
+
+        async function saveAssessmentResult(score) {
+            try {
+                const response = await fetch('/api/applications/assessment/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        application_id: activeApplication.id,
+                        score: score
+                    })
+                });
+                
+                if (response.ok) {
+                    document.getElementById('step-3').className = 'step completed';
+                    setTimeout(() => {
+                        loadNegotiationRound();
+                    }, 1500);
+                }
+            } catch (err) {
+                alert("Save Assessment error: " + err);
             }
         }
 
         // STAGE 4: NEGOTIATION
-        function loadNegotiationStage() {
-            document.getElementById('panel-assessment').classList.remove('active');
-            document.getElementById('panel-negotiation').classList.add('active');
+        let negotiationAttempts = 0;
+        function loadNegotiationRound() {
+            document.getElementById('panel-skills-test').classList.remove('active');
+            document.getElementById('panel-salary-negotiate').classList.add('active');
             document.getElementById('step-4').classList.add('active');
             
-            const stream = document.getElementById('negotiation-stream');
+            const stream = document.getElementById('negotiate-chat-stream');
             stream.innerHTML = '';
+            negotiationAttempts = 0;
             
-            const intro = `Based on your evaluation scores, you are qualified for employment. Your requested expected salary is $${currentCandidate.expected_salary} USD. Let's finalize contract expectations.`;
-            appendNegotiationBubble(intro, 'ai');
+            appendNegotiationBubble(`We have verified your coding assessment. Your expected salary package is $${activeApplication.negotiated_salary || 90000} USD. Let's finalize your offer.`, 'ai');
         }
 
         function appendNegotiationBubble(text, speaker) {
-            const stream = document.getElementById('negotiation-stream');
+            const stream = document.getElementById('negotiate-chat-stream');
             const bubble = document.createElement('div');
             bubble.className = `bubble ${speaker}`;
             bubble.innerText = text;
@@ -1180,99 +1517,212 @@ INDEX_HTML = """
             stream.scrollTop = stream.scrollHeight;
         }
 
-        async function submitNegotiationResponse() {
-            const input = document.getElementById('negotiation-input');
+        async function submitCounterSalary() {
+            const input = document.getElementById('negotiate-chat-input');
             const val = parseFloat(input.value);
             if (isNaN(val) || val <= 0) {
-                alert("Please enter a valid salary counter offer!");
+                alert("Please enter a valid salary!");
                 return;
             }
 
-            appendNegotiationBubble(`My counter offer: $${val} USD`, 'user');
-            currentCandidate.expected_salary = val;
-            currentCandidate.negotiation_attempts++;
+            appendNegotiationBubble(`I propose counter compensation: $${val} USD`, 'user');
+            negotiationAttempts++;
+            input.value = '';
 
             try {
                 const response = await fetch('/api/negotiate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        role_key: currentRoleKey,
+                        role_key: selectedJob.assessment_type,
                         expected_salary: val,
-                        counter_offer_count: currentCandidate.negotiation_attempts
+                        counter_offer_count: negotiationAttempts
                     })
                 });
                 const result = await response.json();
-
+                
                 setTimeout(() => {
                     appendNegotiationBubble(result.message, 'ai');
                     if (result.status === 'agreed') {
-                        currentCandidate.final_salary = result.salary;
+                        activeApplication.negotiated_salary = result.salary;
                         document.getElementById('step-4').className = 'step completed';
                         
                         setTimeout(() => {
-                            loadOfferStage();
+                            loadOfferDocumentRound();
                         }, 1500);
                     }
                 }, 1000);
             } catch (err) {
-                alert("Negotiation error: " + err);
+                alert("Negotiation Error: " + err);
             }
         }
 
-        // STAGE 5: OFFER LETTER
-        async function loadOfferStage() {
-            document.getElementById('panel-negotiation').classList.remove('active');
-            document.getElementById('panel-offer').classList.add('active');
+        // STAGE 5: OFFER LETTER ACTIONS
+        function loadOfferDocumentRound() {
+            document.getElementById('panel-salary-negotiate').classList.remove('active');
+            document.getElementById('panel-offer-document').classList.add('active');
             document.getElementById('step-5').classList.add('active');
             
-            // Set offer letters details
-            document.getElementById('offer-name').innerText = currentCandidate.name;
-            document.getElementById('offer-role').innerText = document.getElementById('job-select').options[document.getElementById('job-select').selectedIndex].text;
-            document.getElementById('offer-salary').innerText = currentCandidate.final_salary.toLocaleString();
-            
-            // Ingest candidate log to Recruiter tracking metrics
-            const finalScore = (currentCandidate.ats_score + currentCandidate.assessment_score) / 2;
-            const payload = {
-                id: currentCandidate.id,
-                role: currentCandidate.name,
-                ats: currentCandidate.ats_score,
-                screening: finalScore,
-                decision: finalScore >= 80 ? "Selected" : "Hold / Review",
-                offer: "Dispatched"
-            };
-            recruiterData.push(payload);
-            updateRecruiterConsole();
+            document.getElementById('lbl-offer-role').innerText = selectedJob.title;
+            document.getElementById('lbl-offer-salary').innerText = activeApplication.negotiated_salary.toLocaleString();
         }
 
-        function signOfferLetter() {
-            const signatureLine = document.getElementById('signature-line');
-            signatureLine.innerHTML = `<span style="font-family: cursive; font-size: 1.2rem; color: #10b981;">${currentCandidate.name}</span>`;
-            document.getElementById('step-5').className = 'step completed';
-            alert("E-Signature Confirmed! Application pipeline fully completed!");
+        async function executeContractSign() {
+            try {
+                const response = await fetch('/api/applications/offer/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        application_id: activeApplication.id,
+                        action: 'accepted'
+                    })
+                });
+                
+                if (response.ok) {
+                    document.getElementById('lbl-esign').innerText = "Contract Accepted & Signed!";
+                    document.getElementById('lbl-esign').onclick = null;
+                    document.getElementById('step-5').className = 'step completed';
+                    alert("Congratulations! Offer fully accepted and contract active!");
+                }
+            } catch (err) {
+                alert("Sign error: " + err);
+            }
         }
 
-        function updateRecruiterConsole() {
-            document.getElementById('rec-total-runs').innerText = recruiterData.length;
-            
-            const totalAts = recruiterData.reduce((acc, c) => acc + c.ats, 0);
-            const avgAts = recruiterData.length > 0 ? Math.round(totalAts / recruiterData.length) : 0;
-            document.getElementById('rec-avg-ats').innerText = avgAts + '%';
+        async function rejectOfferContract() {
+             try {
+                const response = await fetch('/api/applications/offer/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        application_id: activeApplication.id,
+                        action: 'rejected'
+                    })
+                });
+                
+                if (response.ok) {
+                    alert("You have declined the employment offer.");
+                    cancelApplicationFlow();
+                }
+            } catch (err) {
+                alert("Rejection error: " + err);
+            }
+        }
 
-            const tbody = document.getElementById('recruiter-pipeline-rows');
-            tbody.innerHTML = '';
-            recruiterData.forEach(c => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${c.id}</strong></td>
-                        <td>${c.role}</td>
-                        <td>${Math.round(c.ats)}%</td>
-                        <td>${Math.round(c.screening)}%</td>
-                        <td><span class="decision-badge badge-selected">${c.decision}</span></td>
-                        <td><span style="color: var(--color-success)">${c.offer}</span></td>
-                    </tr>
-                `;
-            });
+        // MAIL NOTIFICATIONS POLL
+        async function loadCandidateNotifications() {
+            try {
+                const response = await fetch(`/api/notifications/list/${currentUserId}`);
+                const data = await response.json();
+                
+                document.getElementById('notif-count').innerText = data.length;
+                const container = document.getElementById('notif-list-container');
+                container.innerHTML = '';
+                
+                if (data.length === 0) {
+                    container.innerHTML = `<p style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">No emails or updates in inbox.</p>`;
+                    return;
+                }
+
+                data.forEach(n => {
+                    container.innerHTML += `
+                        <div class="notification-card">
+                            <div class="notification-title">✉ ${n.title}</div>
+                            <div class="notification-body">${n.message}</div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.log("Error loading notif: " + err);
+            }
+        }
+
+        // RECRUITER FUNCTIONS
+        async function submitRecruiterJobPost() {
+            const title = document.getElementById('job-title').value;
+            const skills = document.getElementById('job-skills').value;
+            const desc = document.getElementById('job-desc').value;
+            const budgetMin = parseInt(document.getElementById('job-budget-min').value);
+            const budgetMax = parseInt(document.getElementById('job-budget-max').value);
+            const assess = document.getElementById('job-assess').value;
+
+            if (!title || !skills || !desc) {
+                alert("Please fill job posting fields!");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/jobs/post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        company_name: "Zecpath Corporation",
+                        title, description: desc, skills_required: skills,
+                        budget_min: budgetMin, budget_max: budgetMax, assessment_type: assess
+                    })
+                });
+
+                if (response.ok) {
+                    alert("Job requirement posted successfully!");
+                    loadRecruiterDashboard();
+                }
+            } catch (err) {
+                alert("Post Job Error: " + err);
+            }
+        }
+
+        async function loadRecruiterDashboard() {
+            try {
+                const response = await fetch('/api/recruiter/pipeline');
+                const data = await response.json();
+                
+                document.getElementById('rec-total-applicants').innerText = data.length;
+                const selectedCount = data.filter(c => c.status === 'Selected').length;
+                document.getElementById('rec-total-selected').innerText = selectedCount;
+
+                const tbody = document.getElementById('recruiter-table-body');
+                tbody.innerHTML = '';
+                
+                data.forEach(c => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${c.candidate_name}</strong></td>
+                            <td>${c.job_title}</td>
+                            <td>${Math.round(c.ats_score)}%</td>
+                            <td>${c.screening_score ? Math.round(c.screening_score) + '%' : 'Pending'}</td>
+                            <td>${c.assessment_score ? Math.round(c.assessment_score) + '%' : 'Pending'}</td>
+                            <td><span class="decision-badge badge-selected">${c.status}</span></td>
+                            <td>
+                                <select class="action-select" onchange="overrideAIRecommendation(${c.id}, this.value)">
+                                    <option value="">-- Override --</option>
+                                    <option value="Selected">Select Candidate</option>
+                                    <option value="Rejected">Reject Candidate</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.log("Error loading recruiter dashboard: " + err);
+            }
+        }
+
+        async function overrideAIRecommendation(appId, decision) {
+            if (!decision) return;
+            try {
+                const response = await fetch('/api/recruiter/override', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ application_id: appId, decision })
+                });
+                
+                if (response.ok) {
+                    alert(`AI recommendation overridden to: ${decision}`);
+                    loadRecruiterDashboard();
+                }
+            } catch (err) {
+                alert("Override error: " + err);
+            }
         }
     </script>
 </body>
@@ -1283,104 +1733,213 @@ INDEX_HTML = """
 def read_root():
     return INDEX_HTML
 
-@app.post("/api/apply")
-def apply_resume(role_key: str = Form(...), resume_text: str = Form(...)):
-    # Simulates parsing candidate name and calculating job-specific ATS scores
-    name_match = re.search(r"([A-Z][a-z]+ [A-Z][a-z]+)", resume_text)
-    candidate_name = name_match.group(1) if name_match else "Guest Applicant"
+# ----------------------------------------------------------------------
+# ENDPOINTS: USER MANAGEMENT & ONBOARDING
+# ----------------------------------------------------------------------
+@app.post("/api/auth/register")
+def register_user(req: RegisterRequest):
+    table = "candidates" if req.user_type == "candidate" else "companies"
     
-    # Matching keywords
-    role_info = JOB_ROLES.get(role_key, JOB_ROLES["mern"])
-    skills_matched = []
+    # Check if duplicate exists
+    duplicate = db_query(f"SELECT * FROM {table} WHERE email = ?", (req.email,))
+    if duplicate:
+        raise HTTPException(status_code=400, detail="Account email already registered!")
+        
+    db_execute(
+        f"INSERT INTO {table} (name, email, password) VALUES (?, ?, ?)",
+        (req.name, req.email, req.password)
+    )
+    return {"message": "Success"}
+
+@app.post("/api/auth/login")
+def login_user(req: LoginRequest):
+    table = "candidates" if req.user_type == "candidate" else "companies"
     
-    for s in role_info["skills"]:
-        if s in resume_text.lower():
-            skills_matched.append(s.capitalize())
-            
-    # Score metrics
-    matched_count = len(skills_matched)
-    total_count = len(role_info["skills"])
-    ats_score = round((matched_count / total_count) * 100.0, 2) if total_count > 0 else 50.0
-    
-    # Standard fallback
-    if ats_score < 40.0:
-        ats_score = 45.0 # fallback basic
+    user = db_query(f"SELECT * FROM {table} WHERE email = ? AND password = ?", (req.email, req.password))
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
         
     return {
-        "candidate_id": f"C{int(time.time()) % 10000:04d}",
-        "name": candidate_name,
-        "ats_score": ats_score,
-        "skills": skills_matched
+        "user_id": user[0]["id"],
+        "email": user[0]["email"],
+        "name": user[0]["name"]
     }
+
+@app.get("/api/candidates/profile/{candidate_id}")
+def get_candidate_profile(candidate_id: int):
+    profile = db_query("SELECT * FROM candidates WHERE id = ?", (candidate_id,))
+    if not profile:
+        return {}
+    return profile[0]
+
+@app.post("/api/candidates/profile/save")
+def save_candidate_profile(req: ProfileSaveRequest):
+    db_execute(
+        "UPDATE candidates SET name=?, skills=?, experience=?, resume_text=? WHERE id=?",
+        (req.name, req.skills, req.experience, req.resume_text, req.candidate_id)
+    )
+    return {"message": "Success"}
+
+# ----------------------------------------------------------------------
+# ENDPOINTS: JOB ROLE LISTINGS
+# ----------------------------------------------------------------------
+@app.post("/api/jobs/post")
+def post_job(req: JobPostRequest):
+    db_execute(
+        "INSERT INTO jobs (company_id, company_name, title, description, skills_required, budget_min, budget_max, assessment_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (1, req.company_name, req.title, req.description, req.skills_required, req.budget_min, req.budget_max, req.assessment_type)
+    )
+    return {"message": "Job posted successfully!"}
+
+@app.get("/api/jobs/list")
+def list_jobs():
+    return db_query("SELECT * FROM jobs WHERE status = 'open'")
+
+# ----------------------------------------------------------------------
+# ENDPOINTS: APPLICANTS FUNNEL SIMULATOR
+# ----------------------------------------------------------------------
+@app.post("/api/apply")
+def apply_to_job(req: ApplyRequest):
+    job = db_query("SELECT * FROM jobs WHERE id = ?", (req.job_id,))
+    if not job:
+        raise HTTPException(status_code=404, detail="Job posting not found.")
+        
+    # Calculate ATS Score based on skill mapping
+    job_skills = job[0]["skills_required"].lower().split(",")
+    candidate_skills = req.resume_text.lower()
+    
+    matched = []
+    for s in job_skills:
+        if s.strip() in candidate_skills:
+            matched.append(s.strip())
+            
+    ats_score = (len(matched) / len(job_skills)) * 100.0 if job_skills else 50.0
+    if ats_score < 40.0:
+        ats_score = 45.0
+        
+    status = "shortlisted" if ats_score >= 60.0 else "rejected"
+    
+    # Store Candidate application details
+    db_execute(
+        "INSERT INTO applications (job_id, candidate_id, ats_score, status, negotiated_salary) VALUES (?, ?, ?, ?, ?)",
+        (req.job_id, req.candidate_id, ats_score, status, req.expected_salary)
+    )
+    
+    new_app = db_query("SELECT * FROM applications WHERE job_id = ? AND candidate_id = ? ORDER BY id DESC LIMIT 1", (req.job_id, req.candidate_id))
+    
+    # Create shortlisted notification mail inbox updates
+    if status == "shortlisted":
+        title = "Congratulations! Shortlisted"
+        msg = f"You have been shortlisted for the {job[0]['title']} role. Please complete the AI Screening Interview round."
+        db_execute(
+            "INSERT INTO notifications (candidate_id, title, message) VALUES (?, ?, ?)",
+            (req.candidate_id, title, msg)
+        )
+        
+    return new_app[0]
+
+@app.post("/api/applications/screening/submit")
+def submit_screening(req: ScreeningSubmitRequest):
+    # Update screening transcript
+    db_execute(
+        "UPDATE applications SET screening_score=?, status='screening_completed', screening_transcript=? WHERE id=?",
+        (req.screening_score, req.transcript, req.application_id)
+    )
+    
+    # Send email update for round 3
+    app_info = db_query("SELECT * FROM applications WHERE id = ?", (req.application_id,))
+    job_info = db_query("SELECT * FROM jobs WHERE id = ?", (app_info[0]["job_id"],))
+    
+    title = "Round 2 Complete: Technical Invitation"
+    msg = f"You have passed the screening round. Please complete your Technical Sandbox Coding/Aptitude round for the {job_info[0]['title']} role."
+    db_execute(
+        "INSERT INTO notifications (candidate_id, title, message) VALUES (?, ?, ?)",
+        (app_info[0]["candidate_id"], title, msg)
+    )
+    
+    return {"message": "Success"}
 
 @app.post("/api/assessment/evaluate")
 def evaluate_assessment(payload: AssessmentPayload):
     role = payload.role_key
-    role_info = JOB_ROLES.get(role, JOB_ROLES["mern"])
-    
-    if role_info["assessment_type"] == "coding":
-        # Simulate simple sandbox JavaScript correctness compiler checks
+    if role == "coding":
         code = payload.code_content
         if "reverse" in code and ("split" in code or "for" in code):
-            score = 100.0
-            msg = "Sandbox test cases passed. Function reverse() works."
+            return {"score": 100.0, "message": "Sandbox test cases passed. Function reverseString works."}
         else:
-            score = 50.0
-            msg = "Sandbox syntax error or logic output failed."
+            return {"score": 50.0, "message": "Sandbox execution failed."}
     else:
-        # Aptitude answer evaluations
-        answer = payload.aptitude_answer
-        correct_answer = role_info.get("correct", "B")
-        if answer.strip().upper() == correct_answer:
-            score = 100.0
-            msg = "Correct answer selected."
-        else:
-            score = 0.0
-            msg = "Incorrect answer selected."
-            
-    return {
-        "score": score,
-        "message": msg
-    }
+        return {"score": 100.0, "message": "Evaluation successful."}
+
+@app.post("/api/applications/assessment/submit")
+def submit_assessment(req: AssessmentSubmitRequest):
+    db_execute(
+        "UPDATE applications SET assessment_score=?, status='technical_completed' WHERE id=?",
+        (req.score, req.application_id)
+    )
+    return {"message": "Success"}
 
 @app.post("/api/negotiate")
 def negotiate_salary(payload: NegotiationPayload):
-    role = payload.role_key
-    role_info = JOB_ROLES.get(role, JOB_ROLES["mern"])
-    
-    min_budget = role_info["budget_min"]
-    max_budget = role_info["budget_max"]
     expected = payload.expected_salary
-    
-    if expected <= max_budget:
-        # Agreed salary
-        agreed_salary = expected
-        return {
-            "status": "agreed",
-            "salary": agreed_salary,
-            "message": f"Perfect. We agree to your counter offer of ${agreed_salary:,} USD per annum."
-        }
+    if expected <= 95000:
+        return {"status": "agreed", "salary": expected, "message": f"Perfect. We agree to your expected salary of ${expected:,} USD."}
     else:
-        # Counter offer logic
         if payload.counter_offer_count >= 3:
-            # force agree at max budget
-            return {
-                "status": "agreed",
-                "salary": max_budget,
-                "message": f"To proceed with selection, we have set the contract cap at our maximum role budget of ${max_budget:,} USD."
-            }
+            return {"status": "agreed", "salary": 95000, "message": "To proceed, we have capped the offer at our maximum budget of $95,000 USD."}
         else:
-            # suggest halfway counter
-            midpoint = (expected + max_budget) / 2
-            counter_suggestion = round(midpoint)
-            return {
-                "status": "counter",
-                "salary": counter_suggestion,
-                "message": f"That is slightly above our budget limit. Can we align at a midpoint of ${counter_suggestion:,} USD per annum?"
-            }
+            counter = round((expected + 95000) / 2)
+            return {"status": "counter", "salary": counter, "message": f"Can we compromise at a midpoint of ${counter:,} USD?"}
 
+@app.post("/api/applications/offer/action")
+def take_offer_action(req: OfferActionRequest):
+    db_execute(
+        "UPDATE applications SET offer_accepted=?, status=? WHERE id=?",
+        (req.action, "Selected" if req.action == "accepted" else "Rejected", req.application_id)
+    )
+    return {"message": "Success"}
+
+# ----------------------------------------------------------------------
+# ENDPOINTS: RECRUITER ANALYTICS & OVERRIDES
+# ----------------------------------------------------------------------
+@app.get("/api/recruiter/pipeline")
+def get_recruiter_pipeline():
+    query = """
+        SELECT a.id, a.ats_score, a.screening_score, a.assessment_score, a.status,
+               c.name as candidate_name, j.title as job_title
+        FROM applications a
+        JOIN candidates c ON a.candidate_id = c.id
+        JOIN jobs j ON a.job_id = j.id
+    """
+    return db_query(query)
+
+@app.post("/api/recruiter/override")
+def recruiter_override(req: OverrideRequest):
+    # Recruiter override AI recommendation logic
+    db_execute(
+        "UPDATE applications SET status=?, recruiter_override=? WHERE id=?",
+        (req.decision, "override_" + req.decision.lower(), req.application_id)
+    )
+    
+    app_info = db_query("SELECT * FROM applications WHERE id = ?", (req.application_id,))
+    
+    title = f"Application Status Update: {req.decision}"
+    msg = f"Your application status has been updated to: {req.decision}."
+    db_execute(
+        "INSERT INTO notifications (candidate_id, title, message) VALUES (?, ?, ?)",
+        (app_info[0]["candidate_id"], title, msg)
+    )
+    
+    return {"message": "Override success"}
+
+@app.get("/api/notifications/list/{candidate_id}")
+def list_notifications(candidate_id: int):
+    return db_query("SELECT * FROM notifications WHERE candidate_id = ? ORDER BY id DESC", (candidate_id,))
+
+# ----------------------------------------------------------------------
+# HOST & SERVER CONTROLS
+# ----------------------------------------------------------------------
 def open_browser():
-    # Delay to let uvicorn startup server
     time.sleep(1.5)
     print("\n[SYSTEM] Auto-launching Zecpath AI user interface in browser...")
     webbrowser.open("http://127.0.0.1:8000")
@@ -1389,6 +1948,9 @@ def start_server():
     print("\n======================================================================")
     print("STARTING ZECPATH AI SAAS-LEVEL USER INTERFACE SERVER")
     print("======================================================================\n")
+    
+    # Initialize DB schema
+    init_db()
     
     # Start browser loader in background
     threading.Thread(target=open_browser, daemon=True).start()
