@@ -418,6 +418,41 @@ INDEX_HTML = """
             box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
         }
 
+        .form-select option {
+            background-color: #0b0f1e;
+            color: #fff;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 60%);
+            animation: drift 20s infinite alternate ease-in-out;
+        }
+
+        @keyframes drift {
+            0% { transform: scale(1) translate(0, 0); }
+            50% { transform: scale(1.1) translate(1%, 2%); }
+            100% { transform: scale(1) translate(0, 0); }
+        }
+
+        .step.active .step-num {
+            border-color: var(--color-primary);
+            color: #fff;
+            box-shadow: 0 0 15px var(--color-primary-glow);
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+
         /* Auth Form */
         .auth-container {
             max-width: 420px;
@@ -1182,7 +1217,7 @@ INDEX_HTML = """
                     candidateProfile.skills = skills;
                     candidateProfile.experience = exp;
                     candidateProfile.resume_text = resume;
-                    loadJobFeedList(); # Reload match scores
+                    loadJobFeedList(); // Reload match scores
                 }
             } catch (err) {
                 alert("Save Profile Error: " + err);
@@ -1317,7 +1352,7 @@ INDEX_HTML = """
                     verdict.style.color = "var(--color-success)";
                     btnScreening.style.display = "inline-block";
                     document.getElementById('step-1').className = 'step completed';
-                    loadCandidateNotifications(); # update mail
+                    loadCandidateNotifications(); // update mail
                 } else {
                     verdict.innerText = "Application Rejected: Score below threshold.";
                     verdict.style.color = "var(--color-danger)";
@@ -1387,14 +1422,14 @@ INDEX_HTML = """
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             application_id: activeApplication.id,
-                            screening_score: 85.0, # default passing score
+                            screening_score: 85.0, // default passing score
                             transcript: screeningTranscript
                         })
                     });
                     
                     if (response.ok) {
                         setTimeout(() => {
-                            loadCandidateNotifications(); # updates next round email
+                            loadCandidateNotifications(); // updates next round email
                             loadAssessmentStage();
                         }, 1500);
                     }
