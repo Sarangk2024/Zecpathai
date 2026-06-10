@@ -379,8 +379,8 @@ INDEX_HTML = """
 
         .form-select, .form-input, .form-textarea {
             width: 100%;
-            background-color: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: #0c1020;
+            border: 1px solid rgba(255, 255, 255, 0.15);
             color: #fff;
             padding: 0.65rem 0.85rem;
             border-radius: 6px;
@@ -388,6 +388,11 @@ INDEX_HTML = """
             font-size: 0.9rem;
             font-family: inherit;
             transition: all 0.2s ease;
+        }
+
+        .form-select option {
+            background-color: #0c1020;
+            color: #fff;
         }
 
         .form-textarea {
