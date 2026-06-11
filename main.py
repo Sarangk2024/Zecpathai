@@ -770,6 +770,10 @@ INDEX_HTML = """
                 <div class="section-title">
                     <span id="auth-title">Sign In to Zecpath</span>
                 </div>
+                <div class="form-group" id="group-auth-name" style="display: none;">
+                    <label for="auth-name">Full Name</label>
+                    <input type="text" id="auth-name" class="form-input" placeholder="John Doe">
+                </div>
                 <div class="form-group">
                     <label for="auth-email">Email Address</label>
                     <input type="email" id="auth-email" class="form-input" placeholder="name@domain.com">
@@ -787,8 +791,11 @@ INDEX_HTML = """
                 </div>
                 
                 <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
-                    <button class="btn-action" onclick="handleAuthSubmit()">Login</button>
-                    <button class="btn-action" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);" onclick="handleAuthRegister()">Register (First Time)</button>
+                    <button class="btn-action" id="btn-auth-main" onclick="handleAuthSubmit()">Sign In</button>
+                    <div style="text-align: center; margin-top: 0.5rem;">
+                        <span id="auth-toggle-msg" style="font-size: 0.8rem; color: var(--text-muted);">New to Zecpath? </span>
+                        <a href="javascript:void(0)" id="auth-toggle-link" onclick="toggleAuthMode()" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; text-decoration: none;">Create an account</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1091,6 +1098,31 @@ INDEX_HTML = """
             }
         }
 
+        let isSignUpMode = false;
+
+        function toggleAuthMode() {
+            isSignUpMode = !isSignUpMode;
+            const nameGrp = document.getElementById('group-auth-name');
+            const title = document.getElementById('auth-title');
+            const mainBtn = document.getElementById('btn-auth-main');
+            const toggleMsg = document.getElementById('auth-toggle-msg');
+            const toggleLink = document.getElementById('auth-toggle-link');
+
+            if (isSignUpMode) {
+                nameGrp.style.display = 'block';
+                title.innerText = 'Create your Zecpath Account';
+                mainBtn.innerText = 'Register Account';
+                toggleMsg.innerText = 'Already have an account? ';
+                toggleLink.innerText = 'Sign In';
+            } else {
+                nameGrp.style.display = 'none';
+                title.innerText = 'Sign In to Zecpath';
+                mainBtn.innerText = 'Sign In';
+                toggleMsg.innerText = 'New to Zecpath? ';
+                toggleLink.innerText = 'Create an account';
+            }
+        }
+
         // AUTH & ONBOARDING ACTIONS
         async function handleAuthSubmit() {
             const email = document.getElementById('auth-email').value;
@@ -1102,70 +1134,65 @@ INDEX_HTML = """
                 return;
             }
 
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, user_type: type })
-                });
-                
-                if (!response.ok) {
-                    const err = await response.json();
-                    alert(err.detail || "Authentication Failed!");
+            if (isSignUpMode) {
+                const name = document.getElementById('auth-name').value;
+                if (!name) {
+                    alert("Please enter your name to register!");
                     return;
                 }
-                
-                const data = await response.json();
-                currentUserId = data.user_id;
-                currentUserEmail = data.email;
-                currentUserName = data.name || "";
-                currentUserType = type;
 
-                document.getElementById('auth-panel').style.display = 'none';
-                updateHeaderUI();
-
-                if (type === 'candidate') {
-                    document.getElementById('candidate-panel').style.display = 'block';
-                    loadCandidateProfileData();
-                    loadJobFeedList();
-                    loadCandidateNotifications();
-                } else {
-                    document.getElementById('recruiter-panel').style.display = 'block';
-                    loadRecruiterDashboard();
+                try {
+                    const response = await fetch('/api/auth/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email, password, user_type: type })
+                    });
+                    
+                    if (response.ok) {
+                        alert("Registration successful! Please login.");
+                        toggleAuthMode();
+                    } else {
+                        const err = await response.json();
+                        alert(err.detail || "Registration failed!");
+                    }
+                } catch (err) {
+                    alert("Registration Error: " + err);
                 }
-            } catch (err) {
-                alert("Auth Error: " + err);
-            }
-        }
+            } else {
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password, user_type: type })
+                    });
+                    
+                    if (!response.ok) {
+                        const err = await response.json();
+                        alert(err.detail || "Authentication Failed!");
+                        return;
+                    }
+                    
+                    const data = await response.json();
+                    currentUserId = data.user_id;
+                    currentUserEmail = data.email;
+                    currentUserName = data.name || "";
+                    currentUserType = type;
 
-        async function handleAuthRegister() {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-pass').value;
-            const type = document.getElementById('auth-type').value;
+                    document.getElementById('auth-panel').style.display = 'none';
+                    updateHeaderUI();
 
-            if (!email || !password) {
-                alert("Please input credentials!");
-                return;
-            }
-
-            const nameInput = prompt("Please enter your name:");
-            if (!nameInput) return;
-
-            try {
-                const response = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: nameInput, email, password, user_type: type })
-                });
-                
-                if (response.ok) {
-                    alert("Registration successful! Please login.");
-                } else {
-                    const err = await response.json();
-                    alert(err.detail || "Registration failed!");
+                    if (type === 'candidate') {
+                        document.getElementById('candidate-panel').style.display = 'block';
+                        loadCandidateProfileData();
+                        loadJobFeedList();
+                        loadCandidateNotifications();
+                    } else {
+                        document.getElementById('recruiter-panel').style.display = 'block';
+                        loadRecruiterDashboard();
+                    }
+                } catch (err) {
+                    alert("Auth Error: " + err);
                 }
-            } catch (err) {
-                alert("Registration Error: " + err);
             }
         }
 
