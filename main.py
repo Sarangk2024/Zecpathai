@@ -7,11 +7,22 @@ import threading
 import time
 import re
 import urllib.parse
+import io
 import sqlite3
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 import uvicorn
+
+# Try to import PyPDF2 to parse PDF resumes
+try:
+    import PyPDF2
+    HAS_PDF_PARSER = True
+except ImportError:
+    HAS_PDF_PARSER = False
 
 app = FastAPI(title="Zecpath AI - Autonomous Job Portal & Hiring Engine")
 
@@ -107,7 +118,13 @@ def init_db():
             expected_salary INTEGER,
             skills TEXT,
             experience INTEGER,
-            resume_text TEXT
+            resume_text TEXT,
+            education_degree TEXT,
+            education_school TEXT,
+            education_year TEXT,
+            github_url TEXT,
+            linkedin_url TEXT,
+            portfolio_url TEXT
         )
         """,
         """
@@ -146,23 +163,65 @@ def init_db():
             q = q.replace("REAL", "DOUBLE PRECISION")
         cursor.execute(q)
     conn.commit()
+    
+    # Safely migrate new columns to candidates if using SQLite
+    if db_type == "sqlite":
+        for col in ["education_degree", "education_school", "education_year", "github_url", "linkedin_url", "portfolio_url"]:
+            try:
+                cursor.execute(f"ALTER TABLE candidates ADD COLUMN {col} TEXT")
+            except Exception:
+                pass
+        conn.commit()
     conn.close()
     
-    # Seed mock job posts if none exist
+    # Seed 10 mock job posts with proper JDs
     jobs = db_query("SELECT * FROM jobs")
-    if not jobs:
-        db_execute(
-            "INSERT INTO jobs (company_id, company_name, title, description, skills_required, budget_min, budget_max, assessment_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (1, "Zecpath Corporation", "MERN Stack Developer", "Develop interactive React interfaces and Node.js APIs.", "react,node.js,express,mongodb,javascript", 80000, 120000, "coding")
-        )
-        db_execute(
-            "INSERT INTO jobs (company_id, company_name, title, description, skills_required, budget_min, budget_max, assessment_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (2, "Alpha Tech Solutions", "Sales Executive", "Drive revenue goals and manage customer communication.", "communication,negotiation,crm,leads,sales", 50000, 75000, "aptitude")
-        )
-        db_execute(
-            "INSERT INTO jobs (company_id, company_name, title, description, skills_required, budget_min, budget_max, assessment_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (3, "Pixel Design Agency", "UI/UX Designer", "Design wireframes and user flow prototypes in Figma.", "figma,wireframe,prototype,photoshop,design", 70000, 95000, "design_quiz")
-        )
+    if len(jobs) < 10:
+        db_execute("DELETE FROM jobs") # Reset to seed fresh 10 jobs
+        seed_jobs = [
+            ("Zecpath Corporation", "MERN Stack Developer", "Develop interactive React user interfaces, manage Node.js Express servers, and structure MongoDB database schemas.", "react,node.js,express,mongodb,javascript", 80000, 120000, "coding"),
+            ("Zecpath Corporation", "Python Backend Developer", "Design scalable APIs using FastAPI and Python. Interface with PostgreSQL databases and manage containerized DevOps deployments.", "python,fastapi,postgresql,docker,django", 85000, 130000, "coding"),
+            ("Pixel Design Agency", "UI/UX Designer", "Produce modern Figma layout wireframes, high-fidelity prototypes, and perform usability heuristics checking.", "figma,wireframe,prototype,photoshop,design", 70000, 95000, "design_quiz"),
+            ("Alpha Tech Solutions", "Sales Executive", "Drive revenue opportunities, lead CRM workflows, cold call prospects, and execute salary and contract negotiations.", "communication,sales,negotiation,crm,leads", 50000, 75000, "aptitude"),
+            ("DevOps Enterprise", "Cloud Systems Engineer", "Provision infrastructure as code using Terraform, build CI/CD automation pipelines, and scale Docker/Kubernetes container orchestration.", "aws,docker,kubernetes,terraform,cicd", 95000, 145000, "coding"),
+            ("Quality Labs", "QA Automation Analyst", "Implement automated unit testing suites in Cypress and Selenium. Write robust test specs and verify build compliance.", "selenium,cypress,testing,javascript,qa", 65000, 95000, "coding"),
+            ("Agile Solutions", "Technical Project Manager", "Steer Scrum developer team standups, build Agile product roadmaps, create Jira tracking boards, and manage deliverables.", "scrum,agile,jira,roadmap,planning", 85000, 115000, "aptitude"),
+            ("Growth Marketing Co", "SEO Specialist", "Direct digital growth campaigns, analyze Adwords marketing analytics, and execute SEO keyword optimization pipelines.", "seo,analytics,adwords,campaigns,marketing", 60000, 90000, "aptitude"),
+            ("Capital Venture Partners", "Financial Analyst", "Build financial forecasting sheets, validate Excel models, and forecast asset planning analytics.", "excel,modeling,finance,forecasting,statistics", 70000, 100000, "aptitude"),
+            ("Global Talent Group", "HR Operations Recruiter", "Source elite candidates, coordinate interviews, maintain hiring pipeline compliance, and draft offer contracts.", "talent,sourcing,interviewing,compliance,hiring", 55000, 75000, "aptitude")
+        ]
+        for company, title, desc, skills, b_min, b_max, assess in seed_jobs:
+            db_execute(
+                "INSERT INTO jobs (company_id, company_name, title, description, skills_required, budget_min, budget_max, assessment_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (1, company, title, desc, skills, b_min, b_max, assess)
+            )
+
+# ----------------------------------------------------------------------
+# GMAIL SMTP MAILER INTEGRATION
+# ----------------------------------------------------------------------
+SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_EMAIL = os.environ.get("SMTP_EMAIL")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
+
+def send_email_notification(to_email, subject, body_text):
+    print(f"\n[EMAIL DISPATCH LOG] To: {to_email} | Subject: {subject}\nContent:\n{body_text}\n")
+    if SMTP_EMAIL and SMTP_PASSWORD:
+        try:
+            msg = MIMEMultipart()
+            msg["From"] = SMTP_EMAIL
+            msg["To"] = to_email
+            msg["Subject"] = subject
+            msg.attach(MIMEText(body_text, "plain"))
+            
+            server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+            server.starttls()
+            server.login(SMTP_EMAIL, SMTP_PASSWORD)
+            server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+            server.quit()
+            print("[EMAIL DISPATCH LOG] Live SMTP Email sent successfully via Gmail!")
+        except Exception as e:
+            print(f"[WARN] SMTP delivery failed: {e}")
 
 # ----------------------------------------------------------------------
 # AUTHENTICATION & BUSINESS SCHEMAS
@@ -170,13 +229,13 @@ def init_db():
 class LoginRequest(BaseModel):
     email: str
     password: str
-    user_type: str  # candidate or recruiter
+    user_type: str
 
 class RegisterRequest(BaseModel):
     name: str
     email: str
     password: str
-    user_type: str  # candidate or recruiter
+    user_type: str
 
 class JobPostRequest(BaseModel):
     company_name: str
@@ -190,14 +249,20 @@ class JobPostRequest(BaseModel):
 class ProfileSaveRequest(BaseModel):
     candidate_id: int
     name: str
-    contact_info: str
-    gender: str
-    location: str
-    notice_period: str
-    expected_salary: int
-    skills: str
-    experience: int
-    resume_text: str
+    contact_info: str = ""
+    gender: str = ""
+    location: str = ""
+    notice_period: str = ""
+    expected_salary: int = 0
+    skills: str = ""
+    experience: int = 0
+    resume_text: str = ""
+    education_degree: str = ""
+    education_school: str = ""
+    education_year: str = ""
+    github_url: str = ""
+    linkedin_url: str = ""
+    portfolio_url: str = ""
 
 class ApplyRequest(BaseModel):
     candidate_id: int
@@ -222,11 +287,11 @@ class AssessmentSubmitRequest(BaseModel):
 
 class OverrideRequest(BaseModel):
     application_id: int
-    decision: str  # Selected, Rejected
+    decision: str
 
 class OfferActionRequest(BaseModel):
     application_id: int
-    action: str  # accepted, rejected
+    action: str
 
 class AssessmentPayload(BaseModel):
     role_key: str
@@ -273,10 +338,24 @@ INDEX_HTML = """
             background-color: var(--bg-base);
             color: var(--text-main);
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 40%);
             min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 60%);
+            animation: drift 20s infinite alternate ease-in-out;
+        }
+
+        @keyframes drift {
+            0% { transform: scale(1) translate(0, 0); }
+            50% { transform: scale(1.1) translate(1%, 2%); }
+            100% { transform: scale(1) translate(0, 0); }
         }
 
         header {
@@ -337,6 +416,31 @@ INDEX_HTML = """
             color: #fff;
         }
 
+        /* Nav Tabs style */
+        .portal-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.75rem;
+        }
+
+        .nav-tab-item {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-tab-item.active {
+            color: #fff;
+            background-color: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
         .main-container {
             max-width: 1300px;
             margin: 2rem auto;
@@ -344,11 +448,12 @@ INDEX_HTML = """
         }
 
         .card-panel {
-            background-color: var(--bg-panel);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(11, 15, 30, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             margin-bottom: 2rem;
         }
 
@@ -402,7 +507,7 @@ INDEX_HTML = """
 
         .form-select:focus, .form-input:focus, .form-textarea:focus {
             border-color: var(--color-primary);
-            box-shadow: 0 0 8px var(--border-glow);
+            box-shadow: 0 0 12px var(--color-primary-glow);
         }
 
         .btn-action {
@@ -421,28 +526,6 @@ INDEX_HTML = """
         .btn-action:hover {
             transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
-        }
-
-        .form-select option {
-            background-color: #0b0f1e;
-            color: #fff;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: -1;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 60%),
-                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 60%);
-            animation: drift 20s infinite alternate ease-in-out;
-        }
-
-        @keyframes drift {
-            0% { transform: scale(1) translate(0, 0); }
-            50% { transform: scale(1.1) translate(1%, 2%); }
-            100% { transform: scale(1) translate(0, 0); }
         }
 
         .step.active .step-num {
@@ -802,190 +885,312 @@ INDEX_HTML = """
 
         <!-- CANDIDATE VIEW BOARD -->
         <div id="candidate-panel" style="display: none;">
-            <div class="layout-grid">
-                <!-- Sidebar candidate details -->
-                <aside>
-                    <!-- Profile Card -->
+            <!-- Portal Sub Navigation Tabs -->
+            <div class="portal-nav">
+                <div class="nav-tab-item active" id="tab-jobs" onclick="switchCandidateTab('jobs')">🔍 Browse Jobs</div>
+                <div class="nav-tab-item" id="tab-profile" onclick="switchCandidateTab('profile')">👤 My Profile CV</div>
+                <div class="nav-tab-item" id="tab-inbox" onclick="switchCandidateTab('inbox')">📨 Notifications Inbox <span class="notifications-badge" id="notif-count">0</span></div>
+            </div>
+
+            <!-- View 1: Jobs Feed -->
+            <div id="view-candidate-jobs">
+                <div class="card-panel">
+                    <div class="section-title">
+                        <span>Browse Job Openings</span>
+                        <div>
+                            <label for="jobs-sorting" style="font-size: 0.8rem; color: var(--text-muted); margin-right: 0.5rem;">Sort by:</label>
+                            <select id="jobs-sorting" class="form-select" style="display: inline-block; width: 180px; padding: 0.4rem 0.75rem;" onchange="loadJobFeedList()">
+                                <option value="match_highest">Match Score: High to Low</option>
+                                <option value="match_lowest">Match Score: Low to High</option>
+                                <option value="salary_highest">Salary Budget: High to Low</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="job-feed" id="job-feed-list">
+                        <!-- Injected jobs cards -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 2: Profile Section -->
+            <div id="view-candidate-profile" style="display: none;">
+                <div class="card-panel">
+                    <div class="section-title">
+                        <span>Resume Automatic Parser & Profile Form</span>
+                    </div>
+                    
+                    <!-- File upload parser -->
+                    <div style="background-color: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">Upload your Resume CV (.txt or PDF format) to automatically parse details and pre-fill fields.</p>
+                        <input type="file" id="profile-resume-file" style="display: none;" onchange="uploadAndParseResume()">
+                        <button class="btn-action" style="background: rgba(99, 102, 241, 0.2); border: 1px solid var(--color-primary); color: #fff;" onclick="document.getElementById('profile-resume-file').click()">Select Resume File</button>
+                        <div id="parser-file-status" style="font-size: 0.8rem; color: var(--color-success); margin-top: 0.5rem; display: none;">File parsed successfully!</div>
+                    </div>
+
+                    <!-- Profile fields grid -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <!-- Left col general -->
+                        <div>
+                            <h3 style="font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 1rem;">General Information</h3>
+                            <div class="form-group">
+                                <label for="prof-name">Full Name</label>
+                                <input type="text" id="prof-name" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-contact">Contact Phone</label>
+                                <input type="text" id="prof-contact" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-gender">Gender</label>
+                                <select id="prof-gender" class="form-select">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-location">Current Location</label>
+                                <input type="text" id="prof-location" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-notice">Notice Period</label>
+                                <input type="text" id="prof-notice" class="form-input" placeholder="e.g. 30 days">
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-salary">Expected Salary (USD / Yr)</label>
+                                <input type="number" id="prof-salary" class="form-input">
+                            </div>
+                        </div>
+
+                        <!-- Right col links & qualifications -->
+                        <div>
+                            <h3 style="font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 1rem;">Professional & Academic Details</h3>
+                            <div class="form-group">
+                                <label for="prof-skills">Skills (comma-separated list)</label>
+                                <input type="text" id="prof-skills" class="form-input" placeholder="react, node.js, python">
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-exp">Years of Experience</label>
+                                <input type="number" id="prof-exp" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-edu-degree">Education Degree</label>
+                                <input type="text" id="prof-edu-degree" class="form-input" placeholder="e.g. Bachelor of Science in CS">
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-edu-school">School / University</label>
+                                <input type="text" id="prof-edu-school" class="form-input" placeholder="e.g. Stanford University">
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-edu-year">Graduation Year</label>
+                                <input type="text" id="prof-edu-year" class="form-input" placeholder="2024">
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-link-github">GitHub Link</label>
+                                <input type="text" id="prof-link-github" class="form-input" placeholder="https://github.com/username">
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-link-linkedin">LinkedIn Link</label>
+                                <input type="text" id="prof-link-linkedin" class="form-input" placeholder="https://linkedin.com/in/username">
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-link-portfolio">Portfolio Website Link</label>
+                                <input type="text" id="prof-link-portfolio" class="form-input" placeholder="https://username.dev">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prof-resume">Raw Resume CV Text</label>
+                        <textarea id="prof-resume" class="form-textarea" placeholder="Resume content details..."></textarea>
+                    </div>
+
+                    <button class="btn-action" style="width: 100%; margin-top: 1rem;" onclick="saveCandidateProfile()">Save Profile Details</button>
+                </div>
+            </div>
+
+            <!-- View 3: Message notifications list -->
+            <div id="view-candidate-inbox" style="display: none;">
+                <div class="card-panel">
+                    <div class="section-title">
+                        <span>Notifications & Mail Desk</span>
+                    </div>
+                    <div id="notif-list-container">
+                        <!-- Injected messages -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flow Workspace Active Application panel -->
+            <div id="candidate-pipeline-workspace" style="display: none;">
+                <div class="stepper-row">
+                    <div class="step" id="step-1"><div class="step-num">1</div><div class="step-label">ATS Check</div></div>
+                    <div class="step" id="step-2"><div class="step-num">2</div><div class="step-label">Voice call</div></div>
+                    <div class="step" id="step-3"><div class="step-num">3</div><div class="step-label">Assessment</div></div>
+                    <div class="step" id="step-4"><div class="step-num">4</div><div class="step-label">Negotiation</div></div>
+                    <div class="step" id="step-5"><div class="step-num">5</div><div class="step-label">Offer Sign</div></div>
+                </div>
+
+                <!-- Panel 1: Apply Info form -->
+                <div class="workspace-panel active" id="panel-apply-details">
                     <div class="card-panel">
                         <div class="section-title">
-                            <span>My Profile CV</span>
+                            <span id="apply-job-header">Apply for Job Position</span>
                         </div>
-                        <div class="form-group">
-                            <label for="prof-name">Full Name</label>
-                            <input type="text" id="prof-name" class="form-input">
+                        
+                        <!-- Upload Custom resume files directly on apply page -->
+                        <div style="background-color: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); padding: 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Optionally upload a custom resume for this job role, or apply instantly using profile data.</p>
+                            <input type="file" id="apply-resume-file" style="display: none;" onchange="uploadApplyResumeFile()">
+                            <button class="btn-action" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 0.4rem 1rem;" onclick="document.getElementById('apply-resume-file').click()">Upload Custom Resume</button>
+                            <div id="apply-file-status" style="font-size: 0.8rem; color: var(--color-success); margin-top: 0.4rem; display: none;">Custom resume file attached!</div>
                         </div>
-                        <div class="form-group">
-                            <label for="prof-skills">Skills (comma-separated)</label>
-                            <input type="text" id="prof-skills" class="form-input" placeholder="react, node.js, express">
-                        </div>
-                        <div class="form-group">
-                            <label for="prof-exp">Experience (Years)</label>
-                            <input type="number" id="prof-exp" class="form-input" value="1">
-                        </div>
-                        <div class="form-group">
-                            <label for="prof-resume">Resume CV Content</label>
-                            <textarea id="prof-resume" class="form-textarea" placeholder="Paste qualifications experience details..."></textarea>
-                        </div>
-                        <button class="btn-action" style="width: 100%;" onclick="saveCandidateProfile()">Save Profile</button>
-                    </div>
 
-                    <!-- Mail inbox notifications -->
+                        <div class="scores-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+                            <div>
+                                <label for="app-name" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Full Name</label>
+                                <input type="text" id="app-name" class="form-input">
+                            </div>
+                            <div>
+                                <label for="app-contact" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Contact Details</label>
+                                <input type="text" id="app-contact" class="form-input">
+                            </div>
+                        </div>
+                        <div class="scores-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+                            <div>
+                                <label for="app-gender" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Gender</label>
+                                <select id="app-gender" class="form-select">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="app-location" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Location</label>
+                                <input type="text" id="app-location" class="form-input">
+                            </div>
+                        </div>
+                        <div class="scores-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+                            <div>
+                                <label for="app-notice" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Notice Period</label>
+                                <input type="text" id="app-notice" class="form-input">
+                            </div>
+                            <div>
+                                <label for="app-salary" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Expected Salary (USD / Yr)</label>
+                                <input type="number" id="app-salary" class="form-input">
+                            </div>
+                        </div>
+                        <button class="btn-action" onclick="submitAtsApplication()">Trigger ATS Analysis & Apply</button>
+                        <button class="btn-action" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); margin-left: 0.5rem;" onclick="cancelApplicationFlow()">Back to Job Board</button>
+                    </div>
+                </div>
+
+                <!-- Panel 1.1: ATS Score Output -->
+                <div class="workspace-panel" id="panel-ats">
+                    <div class="card-panel" style="text-align: center;">
+                        <div class="section-title">
+                            <span>ATS Feedback Report</span>
+                        </div>
+                        
+                        <div id="ats-gauge" style="width: 140px; height: 140px; border-radius: 50%; margin: 2rem auto; display: flex; align-items: center; justify-content: center; position: relative;">
+                            <div id="ats-score-output" style="font-size: 1.8rem; font-weight: 700; color: #fff;">0%</div>
+                        </div>
+                        
+                        <h3 id="ats-verdict" style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem;">Analyzing details...</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Mapped Profile Skills:</p>
+                        
+                        <div id="ats-skills-badge" style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem;">
+                            <!-- Injected badges -->
+                        </div>
+                        
+                        <button class="btn-action" id="btn-to-screening" onclick="goToVoiceScreening()" style="display: none;">Attend AI Interview Call</button>
+                        <button class="btn-action" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); margin-left: 0.5rem;" onclick="cancelApplicationFlow()">Back to Job Board</button>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Voice Interview screen -->
+                <div class="workspace-panel" id="panel-voice-screen">
                     <div class="card-panel">
                         <div class="section-title">
-                            <span>Job Inbox Mail Notifications <span class="notifications-badge" id="notif-count">0</span></span>
+                            <span>AI HR voice Screening Interview Call</span>
                         </div>
-                        <div id="notif-list-container">
-                            <!-- Injected Notifications -->
+                        <div class="call-card">
+                            <div class="dialogue-stream" id="screening-chat-stream">
+                                <!-- Bubbles -->
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                <input type="text" id="screening-chat-input" class="form-input" placeholder="Type your response to the HR voice questions..." onkeypress="handleScreeningEnter(event)">
+                                <button class="btn-action" onclick="submitScreeningAnswer()">Answer</button>
+                            </div>
                         </div>
                     </div>
-                </aside>
+                </div>
 
-                <!-- Center workspace jobs & flows -->
-                <section class="workspace-area">
-                    <!-- Browse Jobs Feed -->
-                    <div class="card-panel" id="candidate-jobs-feed-panel">
+                <!-- Panel 3: Sandbox/Aptitude Assessment -->
+                <div class="workspace-panel" id="panel-skills-test">
+                    <div class="card-panel">
                         <div class="section-title">
-                            <span>Browse Job Openings</span>
+                            <span>AI Competency Sandbox Assessment</span>
                         </div>
-                        <div class="job-feed" id="job-feed-list">
-                            <!-- Injected jobs cards -->
+                        <div id="dynamic-assessment-content">
+                            <!-- Dynamic elements injected -->
                         </div>
                     </div>
+                </div>
 
-                    <!-- Flow workspace application run -->
-                    <div id="candidate-pipeline-workspace" style="display: none;">
-                        <div class="stepper-row">
-                            <div class="step" id="step-1"><div class="step-num">1</div><div class="step-label">ATS Check</div></div>
-                            <div class="step" id="step-2"><div class="step-num">2</div><div class="step-label">Voice call</div></div>
-                            <div class="step" id="step-3"><div class="step-num">3</div><div class="step-label">Assessment</div></div>
-                            <div class="step" id="step-4"><div class="step-num">4</div><div class="step-label">Negotiation</div></div>
-                            <div class="step" id="step-5"><div class="step-num">5</div><div class="step-label">Offer Sign</div></div>
+                <!-- Panel 4: Counter offers Salary Negotiation -->
+                <div class="workspace-panel" id="panel-salary-negotiate">
+                    <div class="card-panel">
+                        <div class="section-title">
+                            <span>Salary Negotiation & HR Offer Finalization</span>
                         </div>
-
-                        <!-- Panel 1: Apply Info form -->
-                        <div class="workspace-panel active" id="panel-apply-details">
-                            <div class="card-panel">
-                                <div class="section-title">
-                                    <span id="apply-job-header">Apply for Job Position</span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="app-contact">Contact Details</label>
-                                    <input type="text" id="app-contact" class="form-input" placeholder="+1-555-0199">
-                                </div>
-                                <div class="scores-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
-                                    <div>
-                                        <label for="app-gender" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Gender</label>
-                                        <select id="app-gender" class="form-select">
-                                            <option value="Male">Male</option>
-                                            <option value="Female">Female</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label for="app-location" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Location</label>
-                                        <input type="text" id="app-location" class="form-input" placeholder="New York, USA">
-                                    </div>
-                                </div>
-                                <div class="scores-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
-                                    <div>
-                                        <label for="app-notice" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Notice Period</label>
-                                        <input type="text" id="app-notice" class="form-input" placeholder="30 days">
-                                    </div>
-                                    <div>
-                                        <label for="app-salary" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; display: block;">Expected Salary (USD / Yr)</label>
-                                        <input type="number" id="app-salary" class="form-input" value="90000">
-                                    </div>
-                                </div>
-                                <button class="btn-action" onclick="submitAtsApplication()">Trigger ATS Analysis & Apply</button>
-                                <button class="btn-action" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); margin-left: 0.5rem;" onclick="cancelApplicationFlow()">Back to Job Board</button>
+                        <div class="call-card">
+                            <div class="dialogue-stream" id="negotiate-chat-stream">
+                                <!-- Bubbles -->
                             </div>
-                        </div>
-
-                        <!-- Panel 2: Voice Interview screen -->
-                        <div class="workspace-panel" id="panel-voice-screen">
-                            <div class="card-panel">
-                                <div class="section-title">
-                                    <span>AI HR voice Screening Interview Call</span>
-                                </div>
-                                <div class="call-card">
-                                    <div class="dialogue-stream" id="screening-chat-stream">
-                                        <!-- Bubbles -->
-                                    </div>
-                                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                                        <input type="text" id="screening-chat-input" class="form-input" placeholder="Type your response to the HR voice questions..." onkeypress="handleScreeningEnter(event)">
-                                        <button class="btn-action" onclick="submitScreeningAnswer()">Answer</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Panel 3: Sandbox/Aptitude Assessment -->
-                        <div class="workspace-panel" id="panel-skills-test">
-                            <div class="card-panel">
-                                <div class="section-title">
-                                    <span>AI Competency Sandbox Assessment</span>
-                                </div>
-                                <div id="dynamic-assessment-content">
-                                    <!-- Dynamic elements injected -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Panel 4: Counter offers Salary Negotiation -->
-                        <div class="workspace-panel" id="panel-salary-negotiate">
-                            <div class="card-panel">
-                                <div class="section-title">
-                                    <span>Salary Negotiation & HR Offer Finalization</span>
-                                </div>
-                                <div class="call-card">
-                                    <div class="dialogue-stream" id="negotiate-chat-stream">
-                                        <!-- Bubbles -->
-                                    </div>
-                                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                                        <input type="number" id="negotiate-chat-input" class="form-input" placeholder="Enter annual counter salary USD (e.g. 100000)">
-                                        <button class="btn-action" onclick="submitCounterSalary()">Counter Offer</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Panel 5: Sign Offer Letter PDF -->
-                        <div class="workspace-panel" id="panel-offer-document">
-                            <div class="card-panel">
-                                <div class="section-title">
-                                    <span>Review & Sign Employment Contract</span>
-                                </div>
-                                <div class="offer-letter-doc">
-                                    <div class="offer-header">
-                                        <div>
-                                            <h2 style="color: #6366f1; font-weight: 700;">ZECPATH CORPORATION</h2>
-                                            <span style="font-size: 0.75rem; color: #6b7280;">AUTONOMOUS AI CONTRACT DESK</span>
-                                        </div>
-                                        <span style="font-size: 0.85rem; color: #4b5563; font-weight: 600;">CONTRACT DISPATCHED</span>
-                                    </div>
-                                    <div class="offer-body">
-                                        <p><strong>Position:</strong> <span id="lbl-offer-role">Developer</span></p>
-                                        <p><strong>Base Compensation Package:</strong> $<span id="lbl-offer-salary">0.00</span> USD per annum.</p>
-                                        <p>This automated job offer has been generated based on your scores in the Zecpath AI evaluation pipeline. Both your technical sandbox rating and HR parameters verified selection standards.</p>
-                                    </div>
-                                    <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
-                                        <div>
-                                            <div style="font-size: 0.8rem; color: #6b7280;">Hiring Authority</div>
-                                            <div style="font-family: cursive; font-size: 1.1rem; color: #6366f1;">Zecpath Auto-Sign</div>
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 0.8rem; color: #6b7280;">Candidate Sign-off</div>
-                                            <div id="lbl-esign" style="font-family: cursive; font-size: 1.1rem; color: #10b981; cursor: pointer;" onclick="executeContractSign()">Click to Accept & E-Sign</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                                    <button class="btn-action" style="background-color: var(--color-danger); background-image: none;" onclick="rejectOfferContract()">Reject Contract Offer</button>
-                                </div>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                <input type="number" id="negotiate-chat-input" class="form-input" placeholder="Enter annual counter salary USD (e.g. 100000)">
+                                <button class="btn-action" onclick="submitCounterSalary()">Counter Offer</button>
                             </div>
                         </div>
                     </div>
-                </section>
+                </div>
+
+                <!-- Panel 5: Sign Offer Letter PDF -->
+                <div class="workspace-panel" id="panel-offer-document">
+                    <div class="card-panel">
+                        <div class="section-title">
+                            <span>Review & Sign Employment Contract</span>
+                        </div>
+                        <div class="offer-letter-doc">
+                            <div class="offer-header">
+                                <div>
+                                    <h2 style="color: #6366f1; font-weight: 700;">ZECPATH CORPORATION</h2>
+                                    <span style="font-size: 0.75rem; color: #6b7280;">AUTONOMOUS AI CONTRACT DESK</span>
+                                </div>
+                                <span style="font-size: 0.85rem; color: #4b5563; font-weight: 600;">CONTRACT DISPATCHED</span>
+                            </div>
+                            <div class="offer-body">
+                                <p><strong>Position:</strong> <span id="lbl-offer-role">Developer</span></p>
+                                <p><strong>Base Compensation Package:</strong> $<span id="lbl-offer-salary">0.00</span> USD per annum.</p>
+                                <p>This automated job offer has been generated based on your scores in the Zecpath AI evaluation pipeline. Both your technical sandbox rating and HR parameters verified selection standards.</p>
+                            </div>
+                            <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                                <div>
+                                    <div style="font-size: 0.8rem; color: #6b7280;">Hiring Authority</div>
+                                    <div style="font-family: cursive; font-size: 1.1rem; color: #6366f1;">Zecpath Auto-Sign</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: #6b7280;">Candidate Sign-off</div>
+                                    <div id="lbl-esign" style="font-family: cursive; font-size: 1.1rem; color: #10b981; cursor: pointer;" onclick="executeContractSign()">Click to Accept & E-Sign</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <button class="btn-action" style="background-color: var(--color-danger); background-image: none;" onclick="rejectOfferContract()">Reject Contract Offer</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1002,7 +1207,7 @@ INDEX_HTML = """
                 </div>
                 <div class="rec-metric-card">
                     <div style="font-size: 0.8rem; color: var(--text-muted)">Active Jobs Posted</div>
-                    <div class="rec-metric-val" id="rec-active-jobs">3</div>
+                    <div class="rec-metric-val" id="rec-active-jobs">10</div>
                 </div>
             </div>
 
@@ -1085,6 +1290,7 @@ INDEX_HTML = """
 
         let selectedJob = null;
         let activeApplication = null;
+        let attachedApplyResumeText = "";
 
         function updateHeaderUI() {
             const container = document.getElementById('user-status-container');
@@ -1098,6 +1304,17 @@ INDEX_HTML = """
             }
         }
 
+        // TAB NAVIGATION
+        function switchCandidateTab(tabId) {
+            document.getElementById('view-candidate-jobs').style.display = tabId === 'jobs' ? 'block' : 'none';
+            document.getElementById('view-candidate-profile').style.display = tabId === 'profile' ? 'block' : 'none';
+            document.getElementById('view-candidate-inbox').style.display = tabId === 'inbox' ? 'block' : 'none';
+            
+            document.querySelectorAll('.nav-tab-item').forEach(item => item.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        // AUTH & ONBOARDING ACTIONS
         let isSignUpMode = false;
 
         function toggleAuthMode() {
@@ -1123,7 +1340,6 @@ INDEX_HTML = """
             }
         }
 
-        // AUTH & ONBOARDING ACTIONS
         async function handleAuthSubmit() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-pass').value;
@@ -1183,9 +1399,9 @@ INDEX_HTML = """
 
                     if (type === 'candidate') {
                         document.getElementById('candidate-panel').style.display = 'block';
-                        loadCandidateProfileData();
-                        loadJobFeedList();
-                        loadCandidateNotifications();
+                        await loadCandidateProfileData();
+                        await loadJobFeedList();
+                        await loadCandidateNotifications();
                     } else {
                         document.getElementById('recruiter-panel').style.display = 'block';
                         loadRecruiterDashboard();
@@ -1206,7 +1422,7 @@ INDEX_HTML = """
             updateHeaderUI();
         }
 
-        // PROFILE ONBOARDING
+        // PROFILE SECTION SAVING & RESUME PARSING
         async function loadCandidateProfileData() {
             try {
                 const res = await fetch(`/api/candidates/profile/${currentUserId}`);
@@ -1214,13 +1430,22 @@ INDEX_HTML = """
                     const data = await res.json();
                     if (data) {
                         document.getElementById('prof-name').value = data.name || "";
+                        document.getElementById('prof-contact').value = data.contact_info || "";
+                        document.getElementById('prof-gender').value = data.gender || "Male";
+                        document.getElementById('prof-location').value = data.location || "";
+                        document.getElementById('prof-notice').value = data.notice_period || "";
+                        document.getElementById('prof-salary').value = data.expected_salary || 0;
                         document.getElementById('prof-skills').value = data.skills || "";
                         document.getElementById('prof-exp').value = data.experience || 0;
+                        document.getElementById('prof-edu-degree').value = data.education_degree || "";
+                        document.getElementById('prof-edu-school').value = data.education_school || "";
+                        document.getElementById('prof-edu-year').value = data.education_year || "";
+                        document.getElementById('prof-link-github').value = data.github_url || "";
+                        document.getElementById('prof-link-linkedin').value = data.linkedin_url || "";
+                        document.getElementById('prof-link-portfolio').value = data.portfolio_url || "";
                         document.getElementById('prof-resume').value = data.resume_text || "";
                         
-                        candidateProfile.skills = data.skills || "";
-                        candidateProfile.experience = data.experience || 0;
-                        candidateProfile.resume_text = data.resume_text || "";
+                        candidateProfile = data;
                     }
                 }
             } catch (err) {
@@ -1230,8 +1455,19 @@ INDEX_HTML = """
 
         async function saveCandidateProfile() {
             const name = document.getElementById('prof-name').value;
+            const contact = document.getElementById('prof-contact').value;
+            const gender = document.getElementById('prof-gender').value;
+            const location = document.getElementById('prof-location').value;
+            const notice = document.getElementById('prof-notice').value;
+            const salary = parseInt(document.getElementById('prof-salary').value) || 0;
             const skills = document.getElementById('prof-skills').value;
-            const exp = parseInt(document.getElementById('prof-exp').value);
+            const exp = parseInt(document.getElementById('prof-exp').value) || 0;
+            const eduDegree = document.getElementById('prof-edu-degree').value;
+            const eduSchool = document.getElementById('prof-edu-school').value;
+            const eduYear = document.getElementById('prof-edu-year').value;
+            const github = document.getElementById('prof-link-github').value;
+            const linkedin = document.getElementById('prof-link-linkedin').value;
+            const portfolio = document.getElementById('prof-link-portfolio').value;
             const resume = document.getElementById('prof-resume').value;
 
             try {
@@ -1240,67 +1476,110 @@ INDEX_HTML = """
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         candidate_id: currentUserId,
-                        name, contact_info: "", gender: "", location: "",
-                        notice_period: "", expected_salary: 0, skills, experience: exp, resume_text: resume
+                        name, contact_info: contact, gender, location,
+                        notice_period: notice, expected_salary: salary, skills, experience: exp, resume_text: resume,
+                        education_degree: eduDegree, education_school: eduSchool, education_year: eduYear,
+                        github_url: github, linkedin_url: linkedin, portfolio_url: portfolio
                     })
                 });
                 if (response.ok) {
-                    alert("Profile CV Saved successfully!");
-                    candidateProfile.skills = skills;
-                    candidateProfile.experience = exp;
-                    candidateProfile.resume_text = resume;
-                    loadJobFeedList(); // Reload match scores
+                    alert("Profile CV Details Saved successfully!");
+                    await loadCandidateProfileData();
+                    await loadJobFeedList();
                 }
             } catch (err) {
                 alert("Save Profile Error: " + err);
             }
         }
 
-        // BROWSE JOB LISTINGS
+        async function uploadAndParseResume() {
+            const fileInput = document.getElementById('profile-resume-file');
+            if (fileInput.files.length === 0) return;
+            
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch('/api/parser/resume', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.name) document.getElementById('prof-name').value = data.name;
+                    if (data.contact_info) document.getElementById('prof-contact').value = data.contact_info;
+                    if (data.location) document.getElementById('prof-location').value = data.location;
+                    if (data.skills) document.getElementById('prof-skills').value = data.skills;
+                    if (data.experience) document.getElementById('prof-exp').value = data.experience;
+                    if (data.education_degree) document.getElementById('prof-edu-degree').value = data.education_degree;
+                    if (data.education_school) document.getElementById('prof-edu-school').value = data.education_school;
+                    if (data.education_year) document.getElementById('prof-edu-year').value = data.education_year;
+                    if (data.resume_text) document.getElementById('prof-resume').value = data.resume_text;
+
+                    document.getElementById('parser-file-status').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('parser-file-status').style.display = 'none';
+                    }, 3000);
+                }
+            } catch (err) {
+                alert("Resume parsing failed: " + err);
+            }
+        }
+
+        // BROWSE JOB LISTINGS & SORTING
         async function loadJobFeedList() {
             try {
+                const sortType = document.getElementById('jobs-sorting').value;
                 const response = await fetch('/api/jobs/list');
-                const jobs = await response.json();
+                let jobs = await response.json();
                 
-                const feed = document.getElementById('job-feed-list');
-                feed.innerHTML = '';
-                
+                // Calculate match score ratios first
                 jobs.forEach(j => {
-                    // Match score evaluation logic
-                    let matchScore = 40;
-                    let matchClass = 'match-low';
-                    let matchLabel = 'Low Match';
-
+                    let score = 40;
                     if (candidateProfile.skills) {
                         const required = j.skills_required.toLowerCase().split(',');
                         const owned = candidateProfile.skills.toLowerCase().split(',');
-                        
                         let matchedCount = 0;
                         required.forEach(s => {
                             if (owned.some(o => o.trim() === s.trim())) {
                                 matchedCount++;
                             }
                         });
-
                         const ratio = required.length > 0 ? (matchedCount / required.length) : 0;
-                        if (ratio >= 0.8) {
-                            matchScore = 90;
-                            matchClass = 'match-strong';
-                            matchLabel = 'Strong Match';
-                        } else if (ratio >= 0.5) {
-                            matchScore = 75;
-                            matchClass = 'match-good';
-                            matchLabel = 'Good Match';
-                        }
+                        if (ratio >= 0.8) score = 90;
+                        else if (ratio >= 0.5) score = 75;
                     }
+                    j.match_score = score;
+                });
+
+                // Apply Sorting
+                if (sortType === 'match_highest') {
+                    jobs.sort((a, b) => b.match_score - a.match_score);
+                } else if (sortType === 'match_lowest') {
+                    jobs.sort((a, b) => a.match_score - b.match_score);
+                } else if (sortType === 'salary_highest') {
+                    jobs.sort((a, b) => b.budget_max - a.budget_max);
+                }
+
+                const feed = document.getElementById('job-feed-list');
+                feed.innerHTML = '';
+                
+                jobs.forEach(j => {
+                    let matchClass = 'match-low';
+                    let matchLabel = 'Low Match';
+                    if (j.match_score >= 90) { matchClass = 'match-strong'; matchLabel = 'Strong Match'; }
+                    else if (j.match_score >= 75) { matchClass = 'match-good'; matchLabel = 'Good Match'; }
 
                     feed.innerHTML += `
                         <div class="job-card">
                             <div class="job-info">
                                 <h3>${j.title}</h3>
-                                <p style="font-weight: 500; color: #818cf8; margin-bottom: 0.25rem;">Company: ${j.company_name}</p>
+                                <p style="font-weight: 500; color: #818cf8; margin-bottom: 0.25rem;">Company: ${j.company_name} | Budget: $${j.budget_min.toLocaleString()} - $${j.budget_max.toLocaleString()}</p>
                                 <p>${j.description}</p>
-                                <div class="match-badge ${matchClass}">🟢 ${matchLabel} (${matchScore}%)</div>
+                                <div class="match-badge ${matchClass}">🟢 ${matchLabel} (${j.match_score}%)</div>
                             </div>
                             <button class="btn-action" onclick="openApplicationFlow(${JSON.stringify(j).replace(/"/g, '&quot;')})">Apply Now</button>
                         </div>
@@ -1311,13 +1590,25 @@ INDEX_HTML = """
             }
         }
 
-        // CANDIDATE APPLY FLOW PROGRESSION
+        // CANDIDATE APPLY FLOW PROGRESSION (AUTO-FILL FROM PROFILE)
         function openApplicationFlow(jobObj) {
             selectedJob = jobObj;
-            document.getElementById('candidate-jobs-feed-panel').style.display = 'none';
+            document.getElementById('view-candidate-jobs').style.display = 'none';
+            document.getElementById('tab-profile').style.display = 'none';
+            document.getElementById('tab-inbox').style.display = 'none';
+            document.getElementById('tab-jobs').style.display = 'none';
             document.getElementById('candidate-pipeline-workspace').style.display = 'block';
             document.getElementById('apply-job-header').innerText = `Apply for: ${jobObj.title} at ${jobObj.company_name}`;
             
+            // Auto-fill from saved profile details
+            document.getElementById('app-name').value = candidateProfile.name || "";
+            document.getElementById('app-contact').value = candidateProfile.contact_info || "";
+            document.getElementById('app-gender').value = candidateProfile.gender || "Male";
+            document.getElementById('app-location').value = candidateProfile.location || "";
+            document.getElementById('app-notice').value = candidateProfile.notice_period || "";
+            document.getElementById('app-salary').value = candidateProfile.expected_salary || 90000;
+            attachedApplyResumeText = candidateProfile.resume_text || "";
+
             // Reset Stepper
             document.querySelectorAll('.step').forEach(s => s.className = 'step');
             document.querySelectorAll('.workspace-panel').forEach(p => p.classList.remove('active'));
@@ -1327,10 +1618,39 @@ INDEX_HTML = """
 
         function cancelApplicationFlow() {
             document.getElementById('candidate-pipeline-workspace').style.display = 'none';
-            document.getElementById('candidate-jobs-feed-panel').style.display = 'block';
+            document.getElementById('tab-profile').style.display = 'block';
+            document.getElementById('tab-inbox').style.display = 'block';
+            document.getElementById('tab-jobs').style.display = 'block';
+            document.getElementById('view-candidate-jobs').style.display = 'block';
+            switchCandidateTab('jobs');
+        }
+
+        async function uploadApplyResumeFile() {
+            const fileInput = document.getElementById('apply-resume-file');
+            if (fileInput.files.length === 0) return;
+            
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch('/api/parser/resume', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    attachedApplyResumeText = data.resume_text || "";
+                    document.getElementById('apply-file-status').style.display = 'block';
+                }
+            } catch (err) {
+                alert("File parse failed: " + err);
+            }
         }
 
         async function submitAtsApplication() {
+            const name = document.getElementById('app-name').value;
             const contact = document.getElementById('app-contact').value;
             const gender = document.getElementById('app-gender').value;
             const location = document.getElementById('app-location').value;
@@ -1349,11 +1669,11 @@ INDEX_HTML = """
                     body: JSON.stringify({
                         candidate_id: currentUserId,
                         job_id: selectedJob.id,
-                        name: document.getElementById('prof-name').value || "Guest",
+                        name: name,
                         contact_info: contact,
                         gender, location, notice_period: notice, expected_salary: salary,
-                        experience: parseInt(document.getElementById('prof-exp').value),
-                        resume_text: candidateProfile.resume_text
+                        experience: candidateProfile.experience || 1,
+                        resume_text: attachedApplyResumeText || candidateProfile.resume_text || ""
                     })
                 });
 
@@ -1372,7 +1692,7 @@ INDEX_HTML = """
                 const skillsBadge = document.getElementById('ats-skills-badge');
                 
                 skillsBadge.innerHTML = '';
-                const skillsList = candidateProfile.skills.split(',');
+                const skillsList = candidateProfile.skills ? candidateProfile.skills.split(',') : [];
                 skillsList.forEach(s => {
                     if (s.trim()) {
                         skillsBadge.innerHTML += `<span class="skill-badge">${s.trim()}</span>`;
@@ -1380,16 +1700,16 @@ INDEX_HTML = """
                 });
 
                 if (appObj.ats_score >= 60) {
-                    verdict.innerText = "Shortlisted! Check inbox for AI interview link.";
+                    verdict.innerText = "Shortlisted! Check inbox for AI interview details.";
                     verdict.style.color = "var(--color-success)";
                     btnScreening.style.display = "inline-block";
                     document.getElementById('step-1').className = 'step completed';
-                    loadCandidateNotifications(); // update mail
                 } else {
-                    verdict.innerText = "Application Rejected: Score below threshold.";
+                    verdict.innerText = "Unfortunately, you are not selected.";
                     verdict.style.color = "var(--color-danger)";
                     btnScreening.style.display = "none";
                 }
+                await loadCandidateNotifications();
             } catch (err) {
                 alert("Apply Error: " + err);
             }
@@ -1448,20 +1768,19 @@ INDEX_HTML = """
                     appendScreeningBubble("Voice screening finished. Evaluating transcript scores...", 'ai');
                     document.getElementById('step-2').className = 'step completed';
                     
-                    // submit screening to backend
                     const response = await fetch('/api/applications/screening/submit', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             application_id: activeApplication.id,
-                            screening_score: 85.0, // default passing score
+                            screening_score: 85.0,
                             transcript: screeningTranscript
                         })
                     });
                     
                     if (response.ok) {
-                        setTimeout(() => {
-                            loadCandidateNotifications(); // updates next round email
+                        setTimeout(async () => {
+                            await loadCandidateNotifications();
                             loadAssessmentStage();
                         }, 1500);
                     }
@@ -1801,13 +2120,12 @@ def read_root():
     return INDEX_HTML
 
 # ----------------------------------------------------------------------
-# ENDPOINTS: USER MANAGEMENT & ONBOARDING
+# ENDPOINTS: USER MANAGEMENT & ONBOARDING & PARSING
 # ----------------------------------------------------------------------
 @app.post("/api/auth/register")
 def register_user(req: RegisterRequest):
     table = "candidates" if req.user_type == "candidate" else "companies"
     
-    # Check if duplicate exists
     duplicate = db_query(f"SELECT * FROM {table} WHERE email = ?", (req.email,))
     if duplicate:
         raise HTTPException(status_code=400, detail="Account email already registered!")
@@ -1842,10 +2160,59 @@ def get_candidate_profile(candidate_id: int):
 @app.post("/api/candidates/profile/save")
 def save_candidate_profile(req: ProfileSaveRequest):
     db_execute(
-        "UPDATE candidates SET name=?, skills=?, experience=?, resume_text=? WHERE id=?",
-        (req.name, req.skills, req.experience, req.resume_text, req.candidate_id)
+        """
+        UPDATE candidates 
+        SET name=?, contact_info=?, gender=?, location=?, notice_period=?, expected_salary=?, skills=?, experience=?, resume_text=?,
+            education_degree=?, education_school=?, education_year=?, github_url=?, linkedin_url=?, portfolio_url=?
+        WHERE id=?
+        """,
+        (req.name, req.contact_info, req.gender, req.location, req.notice_period, req.expected_salary, req.skills, req.experience, req.resume_text,
+         req.education_degree, req.education_school, req.education_year, req.github_url, req.linkedin_url, req.portfolio_url, req.candidate_id)
     )
     return {"message": "Success"}
+
+@app.post("/api/parser/resume")
+async def parse_resume(file: UploadFile = File(...)):
+    contents = await file.read()
+    filename = file.filename.lower()
+    
+    text = ""
+    if filename.endswith(".pdf"):
+        if HAS_PDF_PARSER:
+            try:
+                pdf_reader = PyPDF2.PdfReader(io.BytesIO(contents))
+                for page in pdf_reader.pages:
+                    text += page.extract_text() or ""
+            except Exception as e:
+                text = f"[PDF Parsing Failed: {e}]"
+        else:
+            text = "[PDF parser dependency missing on server, falling back to raw binary read]\n" + contents.decode("utf-8", errors="ignore")
+    else:
+        text = contents.decode("utf-8", errors="ignore")
+        
+    # Heuristic matches from text
+    name_match = re.search(r"Name\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
+    phone_match = re.search(r"(?:Phone|Contact)\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
+    location_match = re.search(r"Location\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
+    degree_match = re.search(r"(?:Education|Degree)\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
+    school_match = re.search(r"(?:School|University)\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
+    year_match = re.search(r"Year\s*:\s*(\d{4})", text, re.IGNORECASE)
+    
+    # Skills mapping heuristic
+    known_skills = ["react", "node.js", "express", "mongodb", "javascript", "python", "fastapi", "postgresql", "docker", "django", "figma", "excel", "testing", "cypress", "selenium"]
+    matched_skills = [s for s in known_skills if s in text.lower()]
+    
+    return {
+        "name": name_match.group(1).strip() if name_match else "Parsed Applicant",
+        "contact_info": phone_match.group(1).strip() if phone_match else "",
+        "location": location_match.group(1).strip() if location_match else "",
+        "skills": ",".join(matched_skills),
+        "experience": 3 if "senior" in text.lower() else 1,
+        "education_degree": degree_match.group(1).strip() if degree_match else "",
+        "education_school": school_match.group(1).strip() if school_match else "",
+        "education_year": year_match.group(1).strip() if year_match else "",
+        "resume_text": text
+    }
 
 # ----------------------------------------------------------------------
 # ENDPOINTS: JOB ROLE LISTINGS
@@ -1871,6 +2238,9 @@ def apply_to_job(req: ApplyRequest):
     if not job:
         raise HTTPException(status_code=404, detail="Job posting not found.")
         
+    candidate = db_query("SELECT * FROM candidates WHERE id = ?", (req.candidate_id,))
+    candidate_email = candidate[0]["email"] if candidate else req.name.lower().replace(" ", "") + "@example.com"
+        
     # Calculate ATS Score based on skill mapping
     job_skills = job[0]["skills_required"].lower().split(",")
     candidate_skills = req.resume_text.lower()
@@ -1886,7 +2256,6 @@ def apply_to_job(req: ApplyRequest):
         
     status = "shortlisted" if ats_score >= 60.0 else "rejected"
     
-    # Store Candidate application details
     db_execute(
         "INSERT INTO applications (job_id, candidate_id, ats_score, status, negotiated_salary) VALUES (?, ?, ?, ?, ?)",
         (req.job_id, req.candidate_id, ats_score, status, req.expected_salary)
@@ -1894,7 +2263,6 @@ def apply_to_job(req: ApplyRequest):
     
     new_app = db_query("SELECT * FROM applications WHERE job_id = ? AND candidate_id = ? ORDER BY id DESC LIMIT 1", (req.job_id, req.candidate_id))
     
-    # Create shortlisted notification mail inbox updates
     if status == "shortlisted":
         title = "Congratulations! Shortlisted"
         msg = f"You have been shortlisted for the {job[0]['title']} role. Please complete the AI Screening Interview round."
@@ -1902,26 +2270,53 @@ def apply_to_job(req: ApplyRequest):
             "INSERT INTO notifications (candidate_id, title, message) VALUES (?, ?, ?)",
             (req.candidate_id, title, msg)
         )
+        # Dispatch shortlisted email
+        send_email_notification(
+            to_email=candidate_email,
+            subject=f"Shortlisted: AI Screening Invitation for {job[0]['title']}",
+            body_text=f"Dear {req.name},\n\nCongratulations! You have been shortlisted for the {job[0]['title']} role. Please click the link inside your portal notification center to complete the AI Screening Interview.\n\nBest regards,\nZecpath Recruitment Engine"
+        )
+    else:
+        title = "Application Update"
+        msg = "Unfortunately, you are not selected."
+        db_execute(
+            "INSERT INTO notifications (candidate_id, title, message) VALUES (?, ?, ?)",
+            (req.candidate_id, title, msg)
+        )
+        # Dispatch rejection email
+        send_email_notification(
+            to_email=candidate_email,
+            subject=f"Application Update: {job[0]['title']}",
+            body_text=f"Dear {req.name},\n\nThank you for applying to the {job[0]['title']} role. Unfortunately, you are not selected at this time.\n\nBest regards,\nZecpath Recruitment Engine"
+        )
         
     return new_app[0]
 
 @app.post("/api/applications/screening/submit")
 def submit_screening(req: ScreeningSubmitRequest):
-    # Update screening transcript
     db_execute(
         "UPDATE applications SET screening_score=?, status='screening_completed', screening_transcript=? WHERE id=?",
         (req.screening_score, req.transcript, req.application_id)
     )
     
-    # Send email update for round 3
     app_info = db_query("SELECT * FROM applications WHERE id = ?", (req.application_id,))
     job_info = db_query("SELECT * FROM jobs WHERE id = ?", (app_info[0]["job_id"],))
+    candidate = db_query("SELECT * FROM candidates WHERE id = ?", (app_info[0]["candidate_id"],))
+    candidate_email = candidate[0]["email"] if candidate else "candidate@example.com"
+    candidate_name = candidate[0]["name"] if candidate else "Candidate"
     
     title = "Round 2 Complete: Technical Invitation"
     msg = f"You have passed the screening round. Please complete your Technical Sandbox Coding/Aptitude round for the {job_info[0]['title']} role."
     db_execute(
         "INSERT INTO notifications (candidate_id, title, message) VALUES (?, ?, ?)",
         (app_info[0]["candidate_id"], title, msg)
+    )
+    
+    # Dispatch next round email
+    send_email_notification(
+        to_email=candidate_email,
+        subject=f"Passed Round 1 Screening: Technical Challenge for {job_info[0]['title']}",
+        body_text=f"Dear {candidate_name},\n\nYou have successfully passed the screening interview! Please complete the Technical/Aptitude test by visiting the candidate assessment panel in the Zecpath portal.\n\nBest regards,\nZecpath Recruitment Engine"
     )
     
     return {"message": "Success"}
@@ -1982,7 +2377,6 @@ def get_recruiter_pipeline():
 
 @app.post("/api/recruiter/override")
 def recruiter_override(req: OverrideRequest):
-    # Recruiter override AI recommendation logic
     db_execute(
         "UPDATE applications SET status=?, recruiter_override=? WHERE id=?",
         (req.decision, "override_" + req.decision.lower(), req.application_id)
@@ -2016,13 +2410,8 @@ def start_server():
     print("STARTING ZECPATH AI SAAS-LEVEL USER INTERFACE SERVER")
     print("======================================================================\n")
     
-    # Initialize DB schema
     init_db()
-    
-    # Start browser loader in background
     threading.Thread(target=open_browser, daemon=True).start()
-    
-    # Run FastAPI app
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
 
 if __name__ == "__main__":
