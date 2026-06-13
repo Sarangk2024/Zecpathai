@@ -924,6 +924,7 @@ INDEX_HTML = """
                         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">Upload your Resume CV (.txt or PDF format) to automatically parse details and pre-fill fields.</p>
                         <input type="file" id="profile-resume-file" style="display: none;" onchange="uploadAndParseResume()">
                         <button class="btn-action" style="background: rgba(99, 102, 241, 0.2); border: 1px solid var(--color-primary); color: #fff;" onclick="document.getElementById('profile-resume-file').click()">Select Resume File</button>
+                        <div id="profile-parsed-filename" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--color-success); font-weight: 500;"></div>
                         <div id="parser-file-status" style="font-size: 0.8rem; color: var(--color-success); margin-top: 0.5rem; display: none;">File parsed successfully!</div>
                     </div>
 
@@ -1043,6 +1044,7 @@ INDEX_HTML = """
                             <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Optionally upload a custom resume for this job role, or apply instantly using profile data.</p>
                             <input type="file" id="apply-resume-file" style="display: none;" onchange="uploadApplyResumeFile()">
                             <button class="btn-action" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 0.4rem 1rem;" onclick="document.getElementById('apply-resume-file').click()">Upload Custom Resume</button>
+                            <div id="apply-parsed-filename" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--color-success); font-weight: 500;"></div>
                             <div id="apply-file-status" style="font-size: 0.8rem; color: var(--color-success); margin-top: 0.4rem; display: none;">Custom resume file attached!</div>
                         </div>
 
@@ -1497,6 +1499,7 @@ INDEX_HTML = """
             if (fileInput.files.length === 0) return;
             
             const file = fileInput.files[0];
+            document.getElementById('profile-parsed-filename').innerText = "📄 Parsed File: " + file.name;
             const formData = new FormData();
             formData.append("file", file);
 
@@ -1630,6 +1633,7 @@ INDEX_HTML = """
             if (fileInput.files.length === 0) return;
             
             const file = fileInput.files[0];
+            document.getElementById('apply-parsed-filename').innerText = "📄 Attached File: " + file.name;
             const formData = new FormData();
             formData.append("file", file);
 
@@ -2190,27 +2194,77 @@ async def parse_resume(file: UploadFile = File(...)):
     else:
         text = contents.decode("utf-8", errors="ignore")
         
-    # Heuristic matches from text
-    name_match = re.search(r"Name\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
-    phone_match = re.search(r"(?:Phone|Contact)\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
-    location_match = re.search(r"Location\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
-    degree_match = re.search(r"(?:Education|Degree)\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
-    school_match = re.search(r"(?:School|University)\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
-    year_match = re.search(r"Year\s*:\s*(\d{4})", text, re.IGNORECASE)
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
     
-    # Skills mapping heuristic
+    # 1. Smarter Name Extraction: Inspect the first few lines of the text block.
+    # The first line that is short, doesn't contain contact details (like @, urls, or phone numbers) is the Name!
+    name = "Parsed Applicant"
+    for l in lines[:5]:
+        if "@" not in l and "github.com" not in l and "linkedin.com" not in l and not re.search(r"\b\d{5,}\b", l) and len(l.split()) <= 4:
+            # Clean up punctuation
+            cleaned = re.sub(r"[^\w\s\.-]", "", l).strip()
+            if cleaned:
+                name = cleaned
+                break
+                
+    # 2. Phone Extraction
+    phone = ""
+    phone_match = re.search(r"(\+?\d[\d-\s\(\)\.]{7,}\d)", text)
+    if phone_match:
+        phone = phone_match.group(1).strip()
+        
+    # 3. Location Extraction
+    location = ""
+    location_match = re.search(r"(?:Location|Address|Living in)\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
+    if location_match:
+        location = location_match.group(1).strip()
+    else:
+        # Search for "City, State" patterns like "Chicago, IL" or "New York, NY" or "Kerala, India"
+        for line in lines[:8]:
+            if "," in line and len(line) < 30 and not any(k in line.lower() for k in ["github", "linkedin", "phone", "email"]):
+                location = line.strip()
+                break
+
+    # 4. Education Degree & School Extraction
+    degree = ""
+    school = ""
+    year = "2024"
+    
+    degree_match = re.search(r"(B\.?S\.?|M\.?S\.?|B\.?Tech|M\.?Tech|Bachelor|Master|Ph\.?D)\s*(?:of|in)?\s*([^\n\r,]+)", text, re.IGNORECASE)
+    if degree_match:
+        degree = degree_match.group(0).strip()
+    else:
+        degree_match_alt = re.search(r"(?:Degree|Education)\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
+        if degree_match_alt:
+            degree = degree_match_alt.group(1).strip()
+            
+    school_match = re.search(r"([^\n\r,]+(?:University|College|Institute|School)[^\n\r,]*)", text, re.IGNORECASE)
+    if school_match:
+        school = school_match.group(1).strip()
+        
+    year_match = re.search(r"\b(20\d{2})\b", text)
+    if year_match:
+        year = year_match.group(1).strip()
+
+    # 5. Skills extraction
     known_skills = ["react", "node.js", "express", "mongodb", "javascript", "python", "fastapi", "postgresql", "docker", "django", "figma", "excel", "testing", "cypress", "selenium"]
     matched_skills = [s for s in known_skills if s in text.lower()]
     
+    # Heuristic experience years check
+    experience = 1
+    exp_match = re.search(r"(\d+)\s*[\+\-]?\s*years?\s*of\s*experience", text, re.IGNORECASE)
+    if exp_match:
+        experience = int(exp_match.group(1))
+    
     return {
-        "name": name_match.group(1).strip() if name_match else "Parsed Applicant",
-        "contact_info": phone_match.group(1).strip() if phone_match else "",
-        "location": location_match.group(1).strip() if location_match else "",
+        "name": name,
+        "contact_info": phone,
+        "location": location,
         "skills": ",".join(matched_skills),
-        "experience": 3 if "senior" in text.lower() else 1,
-        "education_degree": degree_match.group(1).strip() if degree_match else "",
-        "education_school": school_match.group(1).strip() if school_match else "",
-        "education_year": year_match.group(1).strip() if year_match else "",
+        "experience": experience,
+        "education_degree": degree,
+        "education_school": school,
+        "education_year": year,
         "resume_text": text
     }
 
