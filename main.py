@@ -2209,7 +2209,7 @@ async def parse_resume(file: UploadFile = File(...)):
                 
     # 2. Phone Extraction
     phone = ""
-    phone_match = re.search(r"(\+?\d[\d-\s\(\)\.]{7,}\d)", text)
+    phone_match = re.search(r"(\+?\d[\d\-\s\(\)\.]{7,}\d)", text)
     if phone_match:
         phone = phone_match.group(1).strip()
         
@@ -2221,30 +2221,57 @@ async def parse_resume(file: UploadFile = File(...)):
     else:
         # Search for "City, State" patterns like "Chicago, IL" or "New York, NY" or "Kerala, India"
         for line in lines[:8]:
-            if "," in line and len(line) < 30 and not any(k in line.lower() for k in ["github", "linkedin", "phone", "email"]):
-                location = line.strip()
+            parts = [p.strip() for p in line.split("|")]
+            for part in parts:
+                if "," in part and len(part) < 30 and not any(k in part.lower() for k in ["github", "linkedin", "phone", "email", "@"]):
+                    location = part
+                    break
+            if location:
                 break
 
-    # 4. Education Degree & School Extraction
+    # 4. Education Degree & School Extraction (Section-based state machine)
     degree = ""
     school = ""
     year = "2024"
     
-    degree_match = re.search(r"(B\.?S\.?|M\.?S\.?|B\.?Tech|M\.?Tech|Bachelor|Master|Ph\.?D)\s*(?:of|in)?\s*([^\n\r,]+)", text, re.IGNORECASE)
-    if degree_match:
-        degree = degree_match.group(0).strip()
-    else:
-        degree_match_alt = re.search(r"(?:Degree|Education)\s*:\s*([^\n\r]+)", text, re.IGNORECASE)
-        if degree_match_alt:
-            degree = degree_match_alt.group(1).strip()
+    edu_index = -1
+    for idx, l in enumerate(lines):
+        if l.lower().strip() == "education":
+            edu_index = idx
+            break
             
-    school_match = re.search(r"([^\n\r,]+(?:University|College|Institute|School)[^\n\r,]*)", text, re.IGNORECASE)
-    if school_match:
-        school = school_match.group(1).strip()
+    if edu_index != -1 and edu_index + 1 < len(lines):
+        deg_line = lines[edu_index + 1]
+        yr_matches = re.findall(r"\b(20\d{2})\b", deg_line)
+        if yr_matches:
+            year = yr_matches[-1]
+            deg_line = re.sub(r"\b20\d{2}\b", "", deg_line).strip()
+            deg_line = re.sub(r"\s*-\s*", " ", deg_line).strip()
+            deg_line = re.sub(r"\s+", " ", deg_line).strip()
+        degree = deg_line
         
-    year_match = re.search(r"\b(20\d{2})\b", text)
-    if year_match:
-        year = year_match.group(1).strip()
+        if edu_index + 2 < len(lines):
+            school_line = lines[edu_index + 2]
+            school_line = re.sub(r"CGPA.*$", "", school_line, flags=re.IGNORECASE).strip()
+            school_line = re.sub(r"GPA.*$", "", school_line, flags=re.IGNORECASE).strip()
+            school = school_line
+            
+    if not degree:
+        degree_match = re.search(r"\b(B\.?S\.?|M\.?S\.?|B\.?Tech|M\.?Tech|B\.?E\.?|M\.?E\.?|Bachelor|Master|Ph\.?D)\b\s*(?:of|in)?\s*([^\n\r,]+)", text, re.IGNORECASE)
+        if degree_match:
+            matched_deg = degree_match.group(0).strip()
+            if not re.search(r"\bms\b\s*(?:average|response|latency|time|loop|query)", matched_deg, re.IGNORECASE):
+                degree = matched_deg
+                
+    if not school:
+        school_match = re.search(r"([^\n\r,]+(?:University|College|Institute|School)[^\n\r,]*)", text, re.IGNORECASE)
+        if school_match:
+            school = school_match.group(1).strip()
+            
+    if year == "2024":
+        year_match = re.search(r"\b(20\d{2})\b", text)
+        if year_match:
+            year = year_match.group(1).strip()
 
     # 5. Skills extraction
     known_skills = ["react", "node.js", "express", "mongodb", "javascript", "python", "fastapi", "postgresql", "docker", "django", "figma", "excel", "testing", "cypress", "selenium"]
