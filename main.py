@@ -167,7 +167,7 @@ def init_db():
         cursor.execute(q)
     conn.commit()
     
-    # Safely migrate new columns to candidates if using SQLite
+    # Safely migrate columns
     if db_type == "sqlite":
         for col in ["education_degree", "education_school", "education_year", "github_url", "linkedin_url", "portfolio_url"]:
             try:
@@ -182,7 +182,7 @@ def init_db():
         conn.commit()
     conn.close()
     
-    # Seed/Reset 10 mock job posts with proper location, experience, department and JDs
+    # Seed mock job posts with proper location, experience, department and JDs
     db_execute("DELETE FROM jobs")
     seed_jobs = [
         ("Zecpath Corporation", "MERN Stack Developer", "Develop interactive React user interfaces, manage Node.js Express servers, and structure MongoDB database schemas.", "react,node.js,express,mongodb,javascript", 80000, 120000, "coding", "Kerala, India", 2, "Engineering"),
@@ -545,6 +545,14 @@ INDEX_HTML = """
             transform: none;
         }
 
+        /* Workspace Visibility panel blocker */
+        .workspace-panel {
+            display: none !important;
+        }
+        .workspace-panel.active {
+            display: block !important;
+        }
+
         .step.active .step-num {
             border-color: var(--color-primary);
             color: #fff;
@@ -860,6 +868,19 @@ INDEX_HTML = """
             gap: 0.75rem;
             margin-bottom: 1.5rem;
         }
+
+        /* Webcam styling */
+        .video-overlay {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
@@ -1060,8 +1081,8 @@ INDEX_HTML = """
                 </div>
             </div>
 
-            <!-- View 3: Active Interviews Lobby (New Page) -->
-            <div id="view-candidate-interviews" style="none">
+            <!-- View 3: Active Interviews Lobby -->
+            <div id="view-candidate-interviews" style="display: none;">
                 <div class="card-panel">
                     <div class="section-title">
                         <span>🎙️ Active Interview Lobby</span>
@@ -1084,16 +1105,8 @@ INDEX_HTML = """
                 </div>
             </div>
 
-            <!-- Flow Workspace Active Application panel -->
+            <!-- Flow Workspace: Initial ATS Apply panel ONLY (NO voice call, assessment, negotiation, or offer) -->
             <div id="candidate-pipeline-workspace" style="display: none;">
-                <div class="stepper-row">
-                    <div class="step" id="step-1"><div class="step-num">1</div><div class="step-label">ATS Check</div></div>
-                    <div class="step" id="step-2"><div class="step-num">2</div><div class="step-label">Voice call</div></div>
-                    <div class="step" id="step-3"><div class="step-num">3</div><div class="step-label">Assessment</div></div>
-                    <div class="step" id="step-4"><div class="step-num">4</div><div class="step-label">Negotiation</div></div>
-                    <div class="step" id="step-5"><div class="step-num">5</div><div class="step-label">Offer Sign</div></div>
-                </div>
-
                 <!-- Panel 1: Apply Info form -->
                 <div class="workspace-panel active" id="panel-apply-details">
                     <div class="card-panel">
@@ -1157,7 +1170,7 @@ INDEX_HTML = """
                     </div>
                 </div>
 
-                <!-- Panel 1.1: ATS Score Output -->
+                <!-- Panel 1.1: ATS Score Output ONLY (Shows shortlisted verdict and back button) -->
                 <div class="workspace-panel" id="panel-ats">
                     <div class="card-panel" style="text-align: center;">
                         <div class="section-title">
@@ -1175,60 +1188,108 @@ INDEX_HTML = """
                             <!-- Injected badges -->
                         </div>
                         
-                        <button class="btn-action" onclick="cancelApplicationFlow()">Back to Active Interviews</button>
+                        <button class="btn-action" onclick="cancelApplicationFlow()">Back to Job Board</button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Panel 2: Voice Interview screen -->
-                <div class="workspace-panel" id="panel-voice-screen">
+            <!-- SEPARATE INTERVIEW ROOM WORKSPACE (Stages 2, 3, 4, 5) -->
+            <div id="view-interview-room-workspace" style="display: none;">
+                <div class="stepper-row">
+                    <div class="step" id="room-step-2"><div class="step-num">2</div><div class="step-label">AI Interview</div></div>
+                    <div class="step" id="room-step-3"><div class="step-num">3</div><div class="step-label">Assessment</div></div>
+                    <div class="step" id="room-step-4"><div class="step-num">4</div><div class="step-label">Negotiation</div></div>
+                    <div class="step" id="room-step-5"><div class="step-num">5</div><div class="step-label">Offer Sign</div></div>
+                </div>
+
+                <!-- Stage 2: AI Webcam & Voice Communication Room -->
+                <div class="workspace-panel" id="room-panel-voice-screen">
                     <div class="card-panel">
                         <div class="section-title">
-                            <span>AI HR voice Screening Interview Call</span>
+                            <span>🎥 Zecpath Live AI Video & Speech Interview Room</span>
                         </div>
-                        <div class="call-card">
-                            <div class="dialogue-stream" id="screening-chat-stream">
-                                <!-- Bubbles -->
+                        
+                        <div style="display: grid; grid-template-columns: 420px 1fr; gap: 1.5rem;">
+                            <!-- Video camera container -->
+                            <div>
+                                <div style="position: relative; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background-color: #020205; height: 260px;">
+                                    <video id="candidate-webcam" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+                                    <div class="video-overlay" id="camera-overlay-status">📷 Live Webcam Feed</div>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                                    <button class="btn-action" style="flex: 1; font-size: 0.8rem; padding: 0.5rem; background: rgba(16,185,129,0.2); border: 1px solid var(--color-success);" onclick="toggleWebcam(true)">Enable Camera</button>
+                                    <button class="btn-action" style="flex: 1; font-size: 0.8rem; padding: 0.5rem; background: rgba(239,68,68,0.2); border: 1px solid var(--color-danger);" onclick="toggleWebcam(false)">Disable Camera</button>
+                                </div>
+                                
+                                <!-- Animated audio visual wave -->
+                                <div style="margin-top: 1rem; background-color: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Voice Recognition Level</div>
+                                    <div style="display: flex; justify-content: center; align-items: flex-end; gap: 4px; height: 30px;" id="audio-visualizer-wave">
+                                        <div style="width:4px; height:6px; background-color:var(--color-primary); border-radius:2px; animation: bounce 0.8s infinite alternate 0.1s;"></div>
+                                        <div style="width:4px; height:18px; background-color:var(--color-primary); border-radius:2px; animation: bounce 0.8s infinite alternate 0.3s;"></div>
+                                        <div style="width:4px; height:10px; background-color:var(--color-primary); border-radius:2px; animation: bounce 0.8s infinite alternate 0.2s;"></div>
+                                        <div style="width:4px; height:24px; background-color:var(--color-primary); border-radius:2px; animation: bounce 0.8s infinite alternate 0.4s;"></div>
+                                        <div style="width:4px; height:8px; background-color:var(--color-primary); border-radius:2px; animation: bounce 0.8s infinite alternate 0.5s;"></div>
+                                    </div>
+                                    <style>
+                                        @keyframes bounce {
+                                            0% { height: 4px; }
+                                            100% { height: 28px; }
+                                        }
+                                    </style>
+                                </div>
                             </div>
-                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                                <input type="text" id="screening-chat-input" class="form-input" placeholder="Type your response to the HR voice questions..." onkeypress="handleScreeningEnter(event)">
-                                <button class="btn-action" onclick="submitScreeningAnswer()">Answer</button>
+                            
+                            <!-- Speech conversation bubble -->
+                            <div class="call-card" style="margin-top: 0; display: flex; flex-direction: column; height: 380px;">
+                                <div style="background-color: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem; font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+                                    <span id="speech-status-indicator">🎙️ Voice Recognition Status: Ready</span>
+                                    <button class="btn-action" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--color-primary);" onclick="startWebSpeechRecognition()">Tap to Talk</button>
+                                </div>
+                                <div class="dialogue-stream" id="room-screening-chat-stream" style="flex: 1; height: auto;">
+                                    <!-- Bubbles -->
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                    <input type="text" id="room-screening-chat-input" class="form-input" placeholder="Say something or type response..." onkeypress="handleRoomScreeningEnter(event)">
+                                    <button class="btn-action" onclick="submitRoomScreeningAnswer()">Answer</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Panel 3: Sandbox/Aptitude Assessment -->
-                <div class="workspace-panel" id="panel-skills-test">
+                <!-- Stage 3: Assessment Sandbox -->
+                <div class="workspace-panel" id="room-panel-skills-test">
                     <div class="card-panel">
                         <div class="section-title">
                             <span>AI Competency Sandbox Assessment</span>
                         </div>
-                        <div id="dynamic-assessment-content">
-                            <!-- Dynamic elements injected -->
+                        <div id="room-dynamic-assessment-content">
+                            <!-- Injected sandbox content -->
                         </div>
                     </div>
                 </div>
 
-                <!-- Panel 4: Counter offers Salary Negotiation -->
-                <div class="workspace-panel" id="panel-salary-negotiate">
+                <!-- Stage 4: Negotiation dialogue -->
+                <div class="workspace-panel" id="room-panel-salary-negotiate">
                     <div class="card-panel">
                         <div class="section-title">
                             <span>Salary Negotiation & HR Offer Finalization</span>
                         </div>
                         <div class="call-card">
-                            <div class="dialogue-stream" id="negotiate-chat-stream">
+                            <div class="dialogue-stream" id="room-negotiate-chat-stream">
                                 <!-- Bubbles -->
                             </div>
                             <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                                <input type="number" id="negotiate-chat-input" class="form-input" placeholder="Enter annual counter salary USD (e.g. 100000)">
-                                <button class="btn-action" onclick="submitCounterSalary()">Counter Offer</button>
+                                <input type="number" id="room-negotiate-chat-input" class="form-input" placeholder="Enter annual counter salary USD (e.g. 100000)">
+                                <button class="btn-action" onclick="submitRoomCounterSalary()">Counter Offer</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Panel 5: Sign Offer Letter PDF -->
-                <div class="workspace-panel" id="panel-offer-document">
+                <!-- Stage 5: Review offer letter contract -->
+                <div class="workspace-panel" id="room-panel-offer-document">
                     <div class="card-panel">
                         <div class="section-title">
                             <span>Review & Sign Employment Contract</span>
@@ -1242,8 +1303,8 @@ INDEX_HTML = """
                                 <span style="font-size: 0.85rem; color: #4b5563; font-weight: 600;">CONTRACT DISPATCHED</span>
                             </div>
                             <div class="offer-body">
-                                <p><strong>Position:</strong> <span id="lbl-offer-role">Developer</span></p>
-                                <p><strong>Base Compensation Package:</strong> $<span id="lbl-offer-salary">0.00</span> USD per annum.</p>
+                                <p><strong>Position:</strong> <span id="room-lbl-offer-role">Developer</span></p>
+                                <p><strong>Base Compensation Package:</strong> $<span id="room-lbl-offer-salary">0.00</span> USD per annum.</p>
                                 <p>This automated job offer has been generated based on your scores in the Zecpath AI evaluation pipeline. Both your technical sandbox rating and HR parameters verified selection standards.</p>
                             </div>
                             <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
@@ -1253,12 +1314,12 @@ INDEX_HTML = """
                                 </div>
                                 <div>
                                     <div style="font-size: 0.8rem; color: #6b7280;">Candidate Sign-off</div>
-                                    <div id="lbl-esign" style="font-family: cursive; font-size: 1.1rem; color: #10b981; cursor: pointer;" onclick="executeContractSign()">Click to Accept & E-Sign</div>
+                                    <div id="room-lbl-esign" style="font-family: cursive; font-size: 1.1rem; color: #10b981; cursor: pointer;" onclick="executeRoomContractSign()">Click to Accept & E-Sign</div>
                                 </div>
                             </div>
                         </div>
                         <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                            <button class="btn-action" style="background-color: var(--color-danger); background-image: none;" onclick="rejectOfferContract()">Reject Contract Offer</button>
+                            <button class="btn-action" style="background-color: var(--color-danger); background-image: none;" onclick="rejectRoomOfferContract()">Reject Contract Offer</button>
                         </div>
                     </div>
                 </div>
@@ -1386,6 +1447,11 @@ INDEX_HTML = """
         let activeApplication = null;
         let attachedApplyResumeText = "";
         let appliedJobIds = [];
+
+        // Webcam stream variables
+        let webcamStream = null;
+        let webSpeechRecognition = null;
+        let activeAISpeaking = false;
 
         function updateHeaderUI() {
             const container = document.getElementById('user-status-container');
@@ -1521,6 +1587,7 @@ INDEX_HTML = """
             document.getElementById('recruiter-panel').style.display = 'none';
             document.getElementById('auth-panel').style.display = 'block';
             updateHeaderUI();
+            toggleWebcam(false);
         }
 
         // PROFILE SECTION SAVING & RESUME PARSING
@@ -1814,41 +1881,134 @@ INDEX_HTML = """
             }
         }
 
-        // ENTER SPECIFIC INTERVIEW ROOM VIEW
+        // WEBCAM CONTROLS
+        async function toggleWebcam(status) {
+            const video = document.getElementById('candidate-webcam');
+            const statusLabel = document.getElementById('camera-overlay-status');
+            
+            if (status) {
+                try {
+                    webcamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    video.srcObject = webcamStream;
+                    statusLabel.innerText = "🟢 Camera Active - Analyzing Expression";
+                    statusLabel.style.color = "var(--color-success)";
+                } catch (err) {
+                    alert("Unable to access webcam: " + err);
+                }
+            } else {
+                if (webcamStream) {
+                    webcamStream.getTracks().forEach(track => track.stop());
+                    webcamStream = null;
+                }
+                video.srcObject = null;
+                statusLabel.innerText = "🔴 Camera Off";
+                statusLabel.style.color = "var(--color-danger)";
+            }
+        }
+
+        // TEXT-TO-SPEECH HELPER
+        function speakAIText(text, callback) {
+            if (!('speechSynthesis' in window)) {
+                if (callback) callback();
+                return;
+            }
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.onstart = () => {
+                activeAISpeaking = true;
+                document.getElementById('speech-status-indicator').innerText = "🔊 AI Recruiter Speaking...";
+            };
+            utterance.onend = () => {
+                activeAISpeaking = false;
+                document.getElementById('speech-status-indicator').innerText = "🎙️ AI listening - speak now";
+                if (callback) callback();
+            };
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // LIVE SPEECH-TO-TEXT VOICE RECOGNITION
+        function startWebSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Speech recognition is not supported in this browser. Please type your responses.");
+                return;
+            }
+            
+            if (activeAISpeaking) return;
+
+            webSpeechRecognition = new SpeechRecognition();
+            webSpeechRecognition.continuous = false;
+            webSpeechRecognition.interimResults = false;
+            webSpeechRecognition.lang = 'en-US';
+
+            webSpeechRecognition.onstart = () => {
+                document.getElementById('speech-status-indicator').innerText = "🎙️ AI Listening... Speak clearly";
+            };
+
+            webSpeechRecognition.onerror = (e) => {
+                console.log("Speech Error: ", e);
+                document.getElementById('speech-status-indicator').innerText = "🎙️ Error: Tap to try again";
+            };
+
+            webSpeechRecognition.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                document.getElementById('room-screening-chat-input').value = text;
+                document.getElementById('speech-status-indicator').innerText = "🎙️ Captured! Press Answer to submit";
+            };
+
+            webSpeechRecognition.start();
+        }
+
+        // ENTER SEPARATE INTERVIEW ROOM VIEW
         function enterInterviewRoom(appObj, stageNum) {
             activeApplication = appObj;
             selectedJob = { id: appObj.job_id, title: appObj.job_title, company_name: appObj.company_name, assessment_type: appObj.assessment_type || 'coding' };
 
-            // Switch to workspace workspace-panel
+            // Switch to separate interviews room view
             document.getElementById('view-candidate-interviews').style.display = 'none';
             document.getElementById('tab-profile').style.display = 'none';
             document.getElementById('tab-inbox').style.display = 'none';
             document.getElementById('tab-jobs').style.display = 'none';
             document.getElementById('tab-interviews').style.display = 'none';
-            document.getElementById('candidate-pipeline-workspace').style.display = 'block';
+            document.getElementById('view-interview-room-workspace').style.display = 'block';
 
             // Set stepper active elements
             document.querySelectorAll('.step').forEach(s => s.className = 'step');
             document.querySelectorAll('.workspace-panel').forEach(p => p.classList.remove('active'));
 
-            for (let i = 1; i < stageNum; i++) {
-                document.getElementById(`step-${i}`).className = 'step completed';
+            for (let i = 2; i < stageNum; i++) {
+                const stepEl = document.getElementById(`room-step-${i}`);
+                if (stepEl) stepEl.className = 'step completed';
             }
-            document.getElementById(`step-${stageNum}`).className = 'step active';
+            const activeStepEl = document.getElementById(`room-step-${stageNum}`);
+            if (activeStepEl) activeStepEl.className = 'step active';
 
             if (stageNum === 2) {
-                document.getElementById('panel-voice-screen').classList.add('active');
+                document.getElementById('room-panel-voice-screen').classList.add('active');
+                toggleWebcam(true); // Open camera feed instantly
                 goToVoiceScreening();
             } else if (stageNum === 3) {
-                document.getElementById('panel-skills-test').classList.add('active');
+                document.getElementById('room-panel-skills-test').classList.add('active');
                 loadAssessmentStage();
             } else if (stageNum === 4) {
-                document.getElementById('panel-salary-negotiate').classList.add('active');
+                document.getElementById('room-panel-salary-negotiate').classList.add('active');
                 loadNegotiationRound();
             } else if (stageNum === 5) {
-                document.getElementById('panel-offer-document').classList.add('active');
+                document.getElementById('room-panel-offer-document').classList.add('active');
                 loadOfferDocumentRound();
             }
+        }
+
+        function cancelInterviewRoomFlow() {
+            toggleWebcam(false); // Stop webcam stream immediately
+            document.getElementById('view-interview-room-workspace').style.display = 'none';
+            document.getElementById('tab-profile').style.display = 'block';
+            document.getElementById('tab-inbox').style.display = 'block';
+            document.getElementById('tab-jobs').style.display = 'block';
+            document.getElementById('tab-interviews').style.display = 'block';
+            document.getElementById('view-candidate-interviews').style.display = 'block';
+            switchCandidateTab('interviews');
         }
 
         // CANDIDATE APPLY FLOW PROGRESSION (AUTO-FILL FROM PROFILE)
@@ -1880,10 +2040,8 @@ INDEX_HTML = """
                 tagsContainer.innerHTML += `<span class="job-tag" style="background: rgba(99, 102, 241, 0.15); border-color: rgba(99,102,241,0.3); color: #fff;">${s.trim()}</span>`;
             });
 
-            // Reset Stepper
-            document.querySelectorAll('.step').forEach(s => s.className = 'step');
+            // Reset Stepper panel workspace displays
             document.querySelectorAll('.workspace-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById('step-1').classList.add('active');
             document.getElementById('panel-apply-details').classList.add('active');
         }
 
@@ -1894,7 +2052,7 @@ INDEX_HTML = """
             document.getElementById('tab-jobs').style.display = 'block';
             document.getElementById('tab-interviews').style.display = 'block';
             document.getElementById('view-candidate-jobs').style.display = 'block';
-            switchCandidateTab('interviews');
+            switchCandidateTab('jobs');
         }
 
         async function uploadApplyResumeFile() {
@@ -1953,7 +2111,7 @@ INDEX_HTML = """
                 const appObj = await response.json();
                 activeApplication = appObj;
                 
-                // Show ATS result
+                // Show ATS result ONLY
                 document.getElementById('panel-apply-details').classList.remove('active');
                 document.getElementById('panel-ats').classList.add('active');
                 
@@ -1974,13 +2132,13 @@ INDEX_HTML = """
                 if (appObj.ats_score >= 60) {
                     verdict.innerText = "Shortlisted! Visit the 'Active Interviews' tab to begin screening call.";
                     verdict.style.color = "var(--color-success)";
-                    document.getElementById('step-1').className = 'step completed';
                 } else {
                     verdict.innerText = "Unfortunately, you are not selected.";
                     verdict.style.color = "var(--color-danger)";
                 }
                 
                 await loadAppliedJobIds();
+                await loadJobFeedList();
                 await loadCandidateNotifications();
             } catch (err) {
                 alert("Apply Error: " + err);
@@ -1989,14 +2147,20 @@ INDEX_HTML = """
 
         // STAGE 2: VOICE SCREENING FLOW
         function goToVoiceScreening() {
-            const stream = document.getElementById('screening-chat-stream');
+            const stream = document.getElementById('room-screening-chat-stream');
             stream.innerHTML = '';
-            
-            appendScreeningBubble(`Hello. Welcome to Zecpath AI voice screening. Let's verify experience and parameters. Please introduce yourself briefly.`, 'ai');
+            currentScreenIndex = 0;
+            screeningTranscript = "";
+
+            const question = `Hello. Welcome to Zecpath AI live webcam screening interview. Let's verify experience and parameters. Please introduce yourself and talk about your skills.`;
+            appendRoomScreeningBubble(question, 'ai');
+            speakAIText(question, () => {
+                startWebSpeechRecognition();
+            });
         }
 
-        function appendScreeningBubble(text, speaker) {
-            const stream = document.getElementById('screening-chat-stream');
+        function appendRoomScreeningBubble(text, speaker) {
+            const stream = document.getElementById('room-screening-chat-stream');
             const bubble = document.createElement('div');
             bubble.className = `bubble ${speaker}`;
             bubble.innerText = text;
@@ -2008,33 +2172,35 @@ INDEX_HTML = """
             "What notice period do you require to join?",
             "What is your expected annual compensation package?"
         ];
-        let currentScreenIndex = 0;
-        let screeningTranscript = "";
 
-        function handleScreeningEnter(event) {
+        function handleRoomScreeningEnter(event) {
             if (event.key === 'Enter') {
-                submitScreeningAnswer();
+                submitRoomScreeningAnswer();
             }
         }
 
-        function submitScreeningAnswer() {
-            const input = document.getElementById('screening-chat-input');
+        function submitRoomScreeningAnswer() {
+            const input = document.getElementById('room-screening-chat-input');
             const text = input.value.trim();
             if (!text) return;
             
-            appendScreeningBubble(text, 'user');
+            appendRoomScreeningBubble(text, 'user');
             screeningTranscript += `\nUser: ${text}`;
             input.value = '';
 
             setTimeout(async () => {
                 if (currentScreenIndex < SCREENING_QS.length) {
                     const nextQ = SCREENING_QS[currentScreenIndex];
-                    appendScreeningBubble(nextQ, 'ai');
+                    appendRoomScreeningBubble(nextQ, 'ai');
                     screeningTranscript += `\nAI: ${nextQ}`;
                     currentScreenIndex++;
+                    speakAIText(nextQ, () => {
+                        startWebSpeechRecognition();
+                    });
                 } else {
-                    appendScreeningBubble("Voice screening finished. Evaluating transcript scores...", 'ai');
-                    document.getElementById('step-2').className = 'step completed';
+                    appendRoomScreeningBubble("AI voice interview completed. Saving transcript...", 'ai');
+                    speakAIText("AI voice interview completed. Saving transcript...");
+                    document.getElementById('room-step-2').className = 'step completed';
                     
                     const response = await fetch('/api/applications/screening/submit', {
                         method: 'POST',
@@ -2049,7 +2215,7 @@ INDEX_HTML = """
                     if (response.ok) {
                         setTimeout(async () => {
                             await loadCandidateNotifications();
-                            cancelApplicationFlow();
+                            cancelInterviewRoomFlow();
                         }, 1500);
                     }
                 }
@@ -2058,7 +2224,7 @@ INDEX_HTML = """
 
         // STAGE 3: ASSESSMENT ROUND
         function loadAssessmentStage() {
-            const container = document.getElementById('dynamic-assessment-content');
+            const container = document.getElementById('room-dynamic-assessment-content');
             container.innerHTML = '';
             
             const assessType = selectedJob.assessment_type || 'coding';
@@ -2135,9 +2301,9 @@ INDEX_HTML = """
                 });
                 
                 if (response.ok) {
-                    document.getElementById('step-3').className = 'step completed';
+                    document.getElementById('room-step-3').className = 'step completed';
                     setTimeout(() => {
-                        cancelApplicationFlow();
+                        cancelInterviewRoomFlow();
                     }, 1500);
                 }
             } catch (err) {
@@ -2148,15 +2314,15 @@ INDEX_HTML = """
         // STAGE 4: NEGOTIATION
         let negotiationAttempts = 0;
         function loadNegotiationRound() {
-            const stream = document.getElementById('negotiate-chat-stream');
+            const stream = document.getElementById('room-negotiate-chat-stream');
             stream.innerHTML = '';
             negotiationAttempts = 0;
             
-            appendNegotiationBubble(`We have verified your coding assessment. Your expected salary package is $${activeApplication.negotiated_salary || 90000} USD. Let's finalize your offer.`, 'ai');
+            appendRoomNegotiationBubble(`We have verified your technical sandbox score. Your expected salary package is $${activeApplication.negotiated_salary || 90000} USD. Let's finalize your offer.`, 'ai');
         }
 
-        function appendNegotiationBubble(text, speaker) {
-            const stream = document.getElementById('negotiate-chat-stream');
+        function appendRoomNegotiationBubble(text, speaker) {
+            const stream = document.getElementById('room-negotiate-chat-stream');
             const bubble = document.createElement('div');
             bubble.className = `bubble ${speaker}`;
             bubble.innerText = text;
@@ -2164,15 +2330,15 @@ INDEX_HTML = """
             stream.scrollTop = stream.scrollHeight;
         }
 
-        async function submitCounterSalary() {
-            const input = document.getElementById('negotiate-chat-input');
+        async function submitRoomCounterSalary() {
+            const input = document.getElementById('room-negotiate-chat-input');
             const val = parseFloat(input.value);
             if (isNaN(val) || val <= 0) {
                 alert("Please enter a valid salary!");
                 return;
             }
 
-            appendNegotiationBubble(`I propose counter compensation: $${val} USD`, 'user');
+            appendRoomNegotiationBubble(`I propose counter compensation: $${val} USD`, 'user');
             negotiationAttempts++;
             input.value = '';
 
@@ -2189,13 +2355,13 @@ INDEX_HTML = """
                 const result = await response.json();
                 
                 setTimeout(() => {
-                    appendNegotiationBubble(result.message, 'ai');
+                    appendRoomNegotiationBubble(result.message, 'ai');
                     if (result.status === 'agreed') {
                         activeApplication.negotiated_salary = result.salary;
-                        document.getElementById('step-4').className = 'step completed';
+                        document.getElementById('room-step-4').className = 'step completed';
                         
                         setTimeout(() => {
-                            cancelApplicationFlow();
+                            cancelInterviewRoomFlow();
                         }, 1500);
                     }
                 }, 1000);
@@ -2206,11 +2372,11 @@ INDEX_HTML = """
 
         // STAGE 5: OFFER LETTER ACTIONS
         function loadOfferDocumentRound() {
-            document.getElementById('lbl-offer-role').innerText = selectedJob.title;
-            document.getElementById('lbl-offer-salary').innerText = activeApplication.negotiated_salary.toLocaleString();
+            document.getElementById('room-lbl-offer-role').innerText = selectedJob.title;
+            document.getElementById('room-lbl-offer-salary').innerText = activeApplication.negotiated_salary.toLocaleString();
         }
 
-        async function executeContractSign() {
+        async function executeRoomContractSign() {
             try {
                 const response = await fetch('/api/applications/offer/action', {
                     method: 'POST',
@@ -2222,18 +2388,18 @@ INDEX_HTML = """
                 });
                 
                 if (response.ok) {
-                    document.getElementById('lbl-esign').innerText = "Contract Accepted & Signed!";
-                    document.getElementById('lbl-esign').onclick = null;
-                    document.getElementById('step-5').className = 'step completed';
+                    document.getElementById('room-lbl-esign').innerText = "Contract Accepted & Signed!";
+                    document.getElementById('room-lbl-esign').onclick = null;
+                    document.getElementById('room-step-5').className = 'step completed';
                     alert("Congratulations! Offer fully accepted and contract active!");
-                    cancelApplicationFlow();
+                    cancelInterviewRoomFlow();
                 }
             } catch (err) {
                 alert("Sign error: " + err);
             }
         }
 
-        async function rejectOfferContract() {
+        async function rejectRoomOfferContract() {
              try {
                 const response = await fetch('/api/applications/offer/action', {
                     method: 'POST',
@@ -2246,7 +2412,7 @@ INDEX_HTML = """
                 
                 if (response.ok) {
                     alert("You have declined the employment offer.");
-                    cancelApplicationFlow();
+                    cancelInterviewRoomFlow();
                 }
             } catch (err) {
                 alert("Rejection error: " + err);
@@ -2566,7 +2732,6 @@ def post_job(req: JobPostRequest):
 def list_jobs():
     jobs = db_query("SELECT * FROM jobs WHERE status = 'open'")
     for j in jobs:
-        # Dynamic count of applicants
         cnt = db_query("SELECT COUNT(*) as count FROM applications WHERE job_id = ?", (j["id"],))
         j["applicant_count"] = cnt[0]["count"] if cnt else 0
     return jobs
